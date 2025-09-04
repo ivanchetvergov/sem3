@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# Build artifacts
+build/
+*.o
+*.out
+*.exe
+
+.gitignore

@@ -1,6 +1,6 @@
 CXX = clang++
 CXXFLAGS = -Wall -Wextra -g -std=c++17
-SRCS = src/Lab2.cpp src/MyString.cpp src/MyVector.cpp src/Rect.cc src/Circle.cc
+SRCS = src/Lab2.cpp src/MyString.cpp src/MyVector.cpp src/Rect.cc src/Circle.cc src/Shape.cc
 BUILD_DIR = build
 OBJS = $(patsubst src/%.cpp,$(BUILD_DIR)/%.o,$(SRCS))
 TARGET = $(BUILD_DIR)/lab2
