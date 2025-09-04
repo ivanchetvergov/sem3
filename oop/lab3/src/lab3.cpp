@@ -3,16 +3,28 @@
 //				Обработка исключений.
 //=======================================================================
 //Используйте недостающие файлы из лабораторной 2
-#include "MyVector.h"
-#include "MyString.h"
+#include "../../lab2/include/MyVector.h"
+#include "../../lab2/include/MyString.h"
+#include "../include/func.h"
+#include "../include/MyStack.h"
+
+#include <iostream>
+#include <vector>
+#include <string>
+
+using std::cout;
+using std::endl;
+using std::vector;
+using std::string;
 
 //============= Шаблон функции для вывода с помощью итератора
-template <class T> void pr(T& v, string s)
+template <class T> 
+void pr(T& v, string s)
 {
 	cout<<"\n\n\t"<<s<<"  # Sequence:\n";
 	
 	// Итератор любого контейнера
-	T::iterator p;
+	typename T::iterator p; // add typename
 	int i;
 
 	for (p = v.begin(), i=0;  p != v.end();  p++, i++)
@@ -31,13 +43,13 @@ int main()
 	// приведенного ниже фрагмента.
 	{
 		int i = 1, j = -1;
-//		Swap (i, j);
+		Swap (i, j);
 
 		double a = 0.5, b = -5.5;
-//		Swap (a, b);
+		Swap (a, b);
 
 		Vector u(1,2), w(-3,-4);
-//		Swap(u, w);
+		Swap(u, w);
 
 		// Если вы достаточно развили класс MyString в предыдущей работе,
 		// то следующий фрагмент тоже должен работать корректно.
@@ -112,7 +124,7 @@ int main()
 		o.Out();
 	}
 
-	stop;
+	// stop;
 
 	//=======================================================================
 	// Контейнеры стандартной библиотеки. Последовательности типа vector
@@ -145,12 +157,13 @@ int main()
 	// Проверим параметры вектора. Затем изменим размер вектора и его заполнение
 	// (метод - resize()) и вновь проверим параметры.
 	
-	//vector<double> vd 
+	vector<double> vd;
 	pr (vd, "Vector of doubles");
 	n = vd.size();
 	n = vd.capacity();
 	n = vd.max_size();
 
+	vd.resize(6, 666.6);
 	pr (vd, "After resize");
 	n = vd.size();
 	n = vd.capacity();
@@ -158,82 +171,94 @@ int main()
 	
 	// Используя метод at(), а также операцию выбора [], измените значения
 	// некоторых элементов вектора и проверьте результат.
+	vd.at(0) = 333.3; 
+    vd[3] = 999.9;  
 	pr (vd, "After at");
 	
 	// Создайте вектор вещественных, который является копией существующего.
+	vector<double> wd = vd;
 	pr (wd, "Copy");
 	
 	// Создайте вектор, который копирует часть существующей последовательности
-	//vector<double> ud 
+	vector<double> ud(vd.begin() + 2, vd.begin() + 5);
 	pr (ud, "Copy part");
 
 	// Создайте вектор вещественных, который является копией части обычного массива.
 	double ar[] = { 0., 1., 2., 3., 4., 5. };
+	vector<double> va(ar, ar + 3);
 
 	//vector<double> va 
 	pr (va, "Copy part of array");
 	
 	// Создайте вектор символов, который является копией части обычной строки
 	char s[] = "Array is a succession of chars";
+	vector<char> vc(s + 7, s + 13);
 	
 	//vector<char> vc 
 	pr (vc, "Copy part of c-style string");
 
 	// Создайте вектор элементов типа Vector и инициализируйте
 	// его вектором с координатами (1,1).
-	//vector<Vector> vv 
+	vector<Vector> vv(7, Vector(1,1));
 	
 	cout << "\n\nvector of Vectors\n";
-	for (int i=0;  i < vv.size();  i++)
+	for (size_t i=0;  i < vv.size();  i++)
 		vv[i].Out();
 
 	// Создайте вектор указателей на Vector и инициализируйте его адресами
 	// объектов класса Vector
 	
-	//vector<Vector*> vp 
+	vector<Vector*> vp;
+	vp.push_back(new Vector(11, 11));
+	vp.push_back(new Vector(21, 12));
+	vp.push_back(new Vector(33, 33));
 	
 	cout << "\n\nvector of pointers to Vector\n";
 	
-	for (i=0;  i < vp.size();  i++)
+	for (size_t i=0;  i < vp.size();  i++)
 		vp[i]->Out();
 
 	// Научитесь пользоваться методом assign и операцией
 	// присваивания = для контейнеров типа vector.
-	//vp.assign 
+	vp.assign(7, new Vector(77, 77)); 
 
 	cout << "\n\nAfter assign\n";
-	for (i=0;  i < vp.size();  i++)
+	for (size_t i=0;  i < vp.size();  i++)
 		vp[i]->Out();
 	
 	// Декларируйте новый вектор указателей на Vector и инициализируйте его 
 	// с помощью второй версии assign
-	//vpNew.assign 
+	vector<Vector*> vpNew;
+	vpNew.assign(vp.begin(), vp.end());
 	
 	cout << "\n\nNew vector after assign\n";
-	for (i=0;  i < vpNew.size();  i++)
-		vpNew[i]->Out();
+	for (const auto& el : vpNew)
+		el->Out();
 
 
 	// На базе шаблона vector создание двухмерный массив и
 	// заполните его значениями разными способами.
 	// Первый вариант - прямоугольная матрица
 	// Второй вариант - ступенчатая матрица
+	const double val = 3.33;
+	const int rows = 3, cols = 2;
+	vector<vector<double>> vdd(rows, vector<double>(cols, val));
 
 	
 	//========= Ступенчатая матрица
 	//vector <vector
-	for (i=0;  i < vdd.size();  i++)
+	for (size_t i=0;  i < vdd.size();  i++)
 		vdd[i] = vector<double>(i+1, double(i));
 	
 	cout << "\n\n\tTest vector of vector<double>\n";
-	for (i=0;  i < vdd.size();  i++)
+	for (size_t i=0;  i < vdd.size();  i++)
 	{
 		cout << endl;
-		for (int j=0;  j < vdd[i].size();  j++)
+		for (size_t j=0;  j < vdd[i].size();  j++)
 			cout << vdd[i][j] << "  ";
 	}	
   
-	stop;
+	// stop;
 
 	//===================================
 	// Простейшие действия с контейнерами
@@ -265,7 +290,7 @@ int main()
 	//Проверьте размер вектора, первый и последний элементы.
 
   
-	stop;
+	// stop;
 
 
 	//3в. Доступ к произвольным элементам вектора с проверкой - at()
@@ -277,19 +302,19 @@ int main()
 	//массива {'K','U','K','U'}.
 
 	
-	  stop;
+	//   stop;
 	//Попробуйте "выйти" за границы вектора с помощью at() и
 	//с помощью []. Обратите внимание: что происходит при
 	//попытке обращения к несуществующему элементу в обоих случаях
 
   
-	stop;
+	// stop;
 
 	//3г.Добавьте в конец вектора vChar2  - букву Z (push_back()). Для
 	//расширения кругозора можете ее сразу же и выкинуть (pop_back())
 
   
-	stop;
+	// stop;
 
 	//3д. Вставка-удаление элемента последовательности insert() - erase()
 	//Очистка последовательности - clear()
@@ -309,15 +334,15 @@ int main()
 	//Сотрите c первого по десятый элементы vChar2
 
   
-	stop;
+	// stop;
 
 	//Уничтожьте все элементы последовательности - clear()
 
-	stop;
+	// stop;
 
 	//Создание двухмерного массива
 
-	stop;
+	// stop;
 
 ///////////////////////////////////////////////////////////////////
 /*
@@ -336,13 +361,13 @@ int main()
 	//должен быть переопределен оператор "<"
 
   
-	stop;
+	// stop;
 
 	//Объедините отсортированные списки - merge(). Посмотрите: что
 	//при этом происходит со вторым списком.
 
 
-	stop;
+	// stop;
 
 	//Исключение элемента из списка - remove()
 	//Исключите из списка элемент с определенным значением.
@@ -350,7 +375,7 @@ int main()
 	//в классе Vector оператор "=="
 
 
-	stop;
+	// stop;
 */
 ///////////////////////////////////////////////////////////////////
 /*
@@ -360,7 +385,7 @@ int main()
 	//задания с помощью алгоритма for_each()
 
 
-	stop;
+	// stop;
 
 	//5б.С помощью алгоритма find() найдите итератор на элемент Vector с
 	//определенным значением. С помощью алгоритма find_if() найдите
@@ -372,7 +397,7 @@ int main()
 
 
 
-	  stop;
+	//   stop;
 
 	//Создайте список из указателей на элеметы Vector. С помощью 
 	//алгоритма find_if() и предиката (можно использовать предикат - 
@@ -381,7 +406,7 @@ int main()
 
   
 	
-	  stop;
+	//   stop;
 
 	//5в. Создайте список элементов Vector. Наполните список
 	//значениями. С помощью алгоритма replace() замените элемент
@@ -394,7 +419,7 @@ int main()
   //Сформировали значения элементов списка
 
   
-	stop;
+	// stop;
 
 
 	//5г. Создайте вектор строк (string). С помощью алгоритма count()
@@ -408,7 +433,7 @@ int main()
 	//объекты-функции
 
 
-	stop;
+	// stop;
 */
 
 	cout <<"\n\n";
