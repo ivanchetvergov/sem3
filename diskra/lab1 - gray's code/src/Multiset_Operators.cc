@@ -1,5 +1,6 @@
 // Multiset_Operators.cc
 #include "Multiset.h"
+#include "Exceptions.h"
 
 // (базовый метод)
 Multiset Multiset::unionWith(const Multiset& other) const {
@@ -41,8 +42,7 @@ Multiset Multiset::intersectWith(const Multiset& other) const {
     return this->difference(this->difference(other));
 }
 
-// см разность: (A \ B) or (B \ A)
-// A ∆ B = (A \ B) ∪ (B \ A)
+// сим разность: (A \ B) or (B \ A)
 Multiset Multiset::symmetricDifference(const Multiset& other) const {
     Multiset a_minus_b = this->difference(other);
     Multiset b_minus_a = other.difference(*this);
@@ -107,8 +107,12 @@ Multiset Multiset::operator/(const Multiset& other) const {
     for (const auto& pair_a : this->elements_) {
         const std::string& code_a = pair_a.first;
         const int a_cardinality = pair_a.second;
-        if (other.elements_.count(code_a) && other.elements_.at(code_a) != 0) {
-            const int b_cardinality = other.elements_.at(code_a);
+        const int b_cardinality = other.elements_.at(code_a);
+        if (b_cardinality == 0){
+            throw InvalidOperationException(" \
+                деление на 0 для эл-та " + code_a);
+        }
+        else if (other.elements_.count(code_a)) {
             result.elements_[code_a] = a_cardinality / b_cardinality;
         }
     }

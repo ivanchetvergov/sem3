@@ -1,16 +1,22 @@
 // Multiset_Fill.cc
-
 #include "Multiset.h"
+#include "Exceptions.h"
 #include "Core.h"
 #include "IO.h"
 #include <random>
 
 void Multiset::fillRandomly(int n) {
+    if (n < 0) {
+        throw InvalidValueException("отрицательная разрядность недопустима.");
+    }
+
     elements_.clear();
     totalCardinality_ = 0;
 
     std::vector<std::string> grayCodes = generateGrayCode(n);
-    if (grayCodes.empty() && n != 0) { return; }
+    if (grayCodes.empty() && n != 0) {
+        throw InvalidOperationException("не удалось сгенерировать коды Грея для разрядности " + std::to_string(n));
+    }
     
     // используем более современный вариант rand() 
     std::random_device rd;                              // источник энтропии
@@ -35,16 +41,14 @@ void Multiset::fillManually(const Multiset& universe) {
         int current_cardinality;
         
         while (true) {
-            current_cardinality = readInteger("  Введите кратность для кода " + code + " (max: " + std::to_string(max_cardinality) + "): ");
+            current_cardinality = readInteger("  ведите кратность для кода " + 
+                    code + " (max: " + std::to_string(max_cardinality) + "): ");
             
-            if (current_cardinality >= 0 && current_cardinality <= max_cardinality) {
-                if (current_cardinality > 0) {
-                    elements_[code] = current_cardinality;
-                    totalCardinality_ += current_cardinality;
-                }
-                break;
-            } else {
-                std::cout << "Ошибка: Кратность должна быть >= 0 и <= " << max_cardinality << ".\n";
+            if (current_cardinality < 0 || current_cardinality > max_cardinality) {
+                throw InvalidValueException("кратность должна быть >= 0 и <= " + std::to_string(max_cardinality));
+            } else if (current_cardinality > 0){
+                elements_[code] = current_cardinality;
+                totalCardinality_ += current_cardinality;
             }
         }
     }
@@ -56,21 +60,21 @@ void Multiset::fillAutomatically(const Multiset& universe, int desiredCardinalit
 
     long long universeCardinality = universe.getCardinality();
     if (desiredCardinality < 0 || desiredCardinality > universeCardinality) {
-        std::cout << "Ошибка: Желаемая мощность должна быть от 0 до " << universeCardinality << ".\n";
-        return;
+        throw InvalidValueException("желаемая мощность должна быть от 0 до " \
+            + std::to_string(universeCardinality) + ".");
     }
     if (desiredCardinality == 0) {
         return;
     }
 
-    // Заполняем элементы кратностями, не превышающими универсум
+    // заполняем элементы кратностями, не превышающими универсум
     std::map<std::string, int> temp_elements;
     for (const auto& pair : universe.getElements()) {
         temp_elements[pair.first] = 0;
     }
-
+    // равное распределение м/у всеми эл. universe
     std::random_device rd;
-    std::mt19937 gen(rd());
+    std::mt19937 gen(rd()); 
     std::uniform_int_distribution<> distrib(0, universe.getElements().size() - 1);
     
     std::vector<std::string> codes;
@@ -78,20 +82,20 @@ void Multiset::fillAutomatically(const Multiset& universe, int desiredCardinalit
         codes.push_back(pair.first);
     }
     
-    // Добавляем элементы по одному, пока не достигнем нужной мощности
+    // добавляем элементы по одному, пока не достигнем нужной мощности
     for (int i = 0; i < desiredCardinality; ++i) {
         int randomIndex = distrib(gen);
         const std::string& code = codes[randomIndex];
-
+        // кр-ть эл под-ва < мн-ва
         if (temp_elements[code] < universe.getElements().at(code)) {
             temp_elements[code]++;
         } else {
-            // Если кратность уже максимальная, пробуем снова
+            // если кратность уже максимальная, пробуем снова
             i--;
         }
     }
 
-    // Переносим результаты в основной контейнер и обновляем мощность
+    // переносим результаты в основной контейнер и обновляем мощность
     for (const auto& pair : temp_elements) {
         if (pair.second > 0) {
             elements_[pair.first] = pair.second;

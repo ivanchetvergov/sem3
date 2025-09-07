@@ -1,8 +1,13 @@
+// UIHandler.cc
 #include "UIHandler.h"
+#include "Multiset.h"
 #include "IO.h"
-#include "Core.h"
+#include "Exceptions.h"
+#include <iostream>
+#include <stdexcept>
 
 using std::cout;
+using std::cerr;
 
 UIHandler::UIHandler(Multiset& universe, Multiset& A, Multiset& B)
     : universe_(universe), A_(A), B_(B) {}
@@ -20,8 +25,7 @@ void UIHandler::showMenu() {
 void UIHandler::handleGenerateUniverse() {
     int n = readInteger("введите разрядность (n): ");
     if (n < 0) {
-        cout << "ошибка: разрядность не может быть отрицательной.\n";
-        return;
+        throw InvalidValueException("отрицательная разрядность недопустима.");
     }
     universe_.fillRandomly(n);
     cout << "универсум успешно сгенерирован.\n";
@@ -30,8 +34,7 @@ void UIHandler::handleGenerateUniverse() {
 
 void UIHandler::handleManualFill() {
     if (universe_.isEmpty()) {
-        cout << "ошибка: сначала сгенерируйте универсум (опция 1).\n";
-        return;
+        throw InvalidOperationException("универсум пуст. сначала сгенерируйте его (опция 1).");
     }
     cout << "--- заполнение множества A ---\n";
     A_.fillManually(universe_);
@@ -41,14 +44,19 @@ void UIHandler::handleManualFill() {
 
 void UIHandler::handleAutomaticFill() {
     if (universe_.isEmpty()) {
-        cout << "ошибка: сначала сгенерируйте универсум (опция 1).\n";
-        return;
+        throw InvalidOperationException("универсум пуст. сначала сгенерируйте его (опция 1).");
     }
     cout << "--- автоматическое заполнение множества A ---\n";
     int cardinalityA = readInteger("введите желаемую мощность для A: ");
+    if (cardinalityA > universe_.getCardinality()) {
+        throw InvalidValueException("желаемая мощность для A превышает мощность универсума.");
+    }
     A_.fillAutomatically(universe_, cardinalityA);
     cout << "--- автоматическое заполнение множества B ---\n";
     int cardinalityB = readInteger("введите желаемую мощность для B: ");
+    if (cardinalityB > universe_.getCardinality()) {
+        throw InvalidValueException("желаемая мощность для B превышает мощность универсума.");
+    }
     B_.fillAutomatically(universe_, cardinalityB);
 }
 
@@ -65,71 +73,89 @@ void UIHandler::showOperationsMenu() {
 
 void UIHandler::handleOperationsMenu() {
     if (A_.isEmpty() || B_.isEmpty()) {
-        std::cout << "ошибка: сначала заполните множества A и B (опция 2 или 3).\n";
-        return;
+        throw InvalidOperationException("множества A и B еще не заполнены. сначала заполните их (опция 2 или 3).");
     }
     
     while (true) {
-        showOperationsMenu();
-        int choice = readInteger("выберите операцию: ");
-        Multiset result; // Создаём мультимножество для хранения результата
+        try {
+            showOperationsMenu();
+            int choice = readInteger("выберите операцию: ");
+            Multiset result;
 
-        switch (choice) {
-            case 1:
-                result = A_ | B_;
-                std::cout << "\n--- результат объединения ---\n";
-                result.print();
-                break;
-            case 2:
-                result = A_ & B_;
-                std::cout << "\n--- результат пересечения ---\n";
-                result.print();
-                break;
-            case 3:
-                result = universe_ - A_;
-                std::cout << "\n--- результат дополнения ---\n";
-                result.print();
-                break;
-            case 4:
-                result = A_ - B_;
-                std::cout << "\n--- результат разности ---\n";
-                result.print();
-                break;
-            case 5:
-                result = A_ ^ B_;
-                std::cout << "\n--- результат симметрической разности ---\n";
-                result.print();
-                break;
-            case 6:
-                return;
-            default:
-                std::cout << "неверный выбор. попробуйте снова.\n";
+            switch (choice) {
+                case 1:
+                    result = A_ | B_;
+                    cout << "\n--- результат объединения ---\n";
+                    result.print();
+                    break;
+                case 2:
+                    result = A_ & B_;
+                    cout << "\n--- результат пересечения ---\n";
+                    result.print();
+                    break;
+                case 3:
+                    result = universe_ - A_;
+                    cout << "\n--- результат дополнения ---\n";
+                    result.print();
+                    break;
+                case 4:
+                    result = A_ - B_;
+                    cout << "\n--- результат разности ---\n";
+                    result.print();
+                    break;
+                case 5:
+                    result = A_ ^ B_;
+                    cout << "\n--- результат симметрической разности ---\n";
+                    result.print();
+                    break;
+                case 6:
+                    return;
+                default:
+                    throw InvalidValueException("неверный выбор.");
+            }
+        }
+        catch (const InvalidOperationException& e) {
+            cerr << e.what() << '\n';
+        }
+        catch (const MultisetException& e) {
+            cerr << e.what() << '\n';
+        }
+        catch (const std::exception& e) {
+            cerr << "произошла непредвиденная ошибка: " << e.what() << '\n';
         }
     }
 }
 
 void UIHandler::handleMainMenu() {
-    this->showMenu();
-    int choice = readInteger("выберите операцию: ");
+    try {
+        this->showMenu();
+        int choice = readInteger("выберите операцию: ");
 
-    switch (choice) {
-        case 1:
-            this->handleGenerateUniverse();
-            break;
-        case 2:
-            this->handleManualFill();
-            break;
-        case 3:
-            this->handleAutomaticFill();
-            break;
-        case 4:
-            this->handleOperationsMenu();
-            break;
-        case 5:
-            cout << "выход из программы.\n";
-            exit(0);
-        default:
-            cout << "неверный выбор. попробуйте снова.\n";
+        switch (choice) {
+            case 1:
+                this->handleGenerateUniverse();
+                break;
+            case 2:
+                this->handleManualFill();
+                break;
+            case 3:
+                this->handleAutomaticFill();
+                break;
+            case 4:
+                this->handleOperationsMenu();
+                break;
+            case 5:
+                cout << "выход из программы.\n";
+                exit(0);
+            default:
+                throw InvalidValueException("неверный выбор.");
+        }
+    }
+    catch (const MultisetException& e) {
+        cerr << e.what() << '\n';
+    }
+    catch (const std::exception& e) {
+        cerr << "произошла непредвиденная ошибка: " << e.what() << '\n';
     }
 }
 
