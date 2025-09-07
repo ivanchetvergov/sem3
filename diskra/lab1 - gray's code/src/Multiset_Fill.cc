@@ -38,17 +38,23 @@ void Multiset::fillManually(const Multiset& universe) {
         const std::string& code = pair.first;
         const int max_cardinality = pair.second;
         
-        int current_cardinality;
-        
         while (true) {
-            current_cardinality = readInteger("  ведите кратность для кода " + 
-                    code + " (max: " + std::to_string(max_cardinality) + "): ");
-            
-            if (current_cardinality < 0 || current_cardinality > max_cardinality) {
-                throw InvalidValueException("кратность должна быть >= 0 и <= " + std::to_string(max_cardinality));
-            } else if (current_cardinality > 0){
-                elements_[code] = current_cardinality;
-                totalCardinality_ += current_cardinality;
+            try {
+                int current_cardinality = readInteger("  ведите кратность для кода " + 
+                        code + " (max: " + std::to_string(max_cardinality) + "): ");
+                
+                if (current_cardinality < 0 || current_cardinality > max_cardinality) {
+                    throw InvalidValueException("кратность должна быть => " + \
+                                                std::to_string(max_cardinality));
+                }
+                
+                if (current_cardinality > 0) {
+                    elements_[code] = current_cardinality;
+                    totalCardinality_ += current_cardinality;
+                }
+                break;
+            } catch (const InvalidValueException& e) {
+                std::cerr  << e.what() << "\n";
             }
         }
     }

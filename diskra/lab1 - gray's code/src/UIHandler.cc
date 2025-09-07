@@ -18,8 +18,29 @@ void UIHandler::showMenu() {
     cout << "2. заполнить множества A и B вручную\n";
     cout << "3. заполнить множества A и B автоматически\n";
     cout << "4. выполнить операции над множествами\n";
-    cout << "5. выход\n";
+    cout << "5. вывести множество\n";
+    cout << "6. выход\n";
     cout << "---------------------\n";
+}
+
+void UIHandler::showDisplayMenu() {
+    cout << "\n--- подменю вывода ---\n";
+    cout << "1. вывести универсум\n";
+    cout << "2. вывести множество A\n";
+    cout << "3. вывести множество B\n";
+    cout << "4. вернуться в главное меню\n";
+    cout << "-----------------------\n";
+}
+
+void UIHandler::showOperationsMenu() {
+    cout << "\n--- подменю операций ---\n";
+    cout << "1. объединение (A | B)\n";
+    cout << "2. пересечение (A & B)\n";
+    cout << "3. дополнение к A (U - A)\n";
+    cout << "4. разность (A - B)\n";
+    cout << "5. симметрическая разность (A ^ B)\n";
+    cout << "6. возвращение в главное меню\n";
+    cout << "-------------------------\n";
 }
 
 void UIHandler::handleGenerateUniverse() {
@@ -60,16 +81,6 @@ void UIHandler::handleAutomaticFill() {
     B_.fillAutomatically(universe_, cardinalityB);
 }
 
-void UIHandler::showOperationsMenu() {
-    cout << "\n--- подменю операций ---\n";
-    cout << "1. объединение (A | B)\n";
-    cout << "2. пересечение (A & B)\n";
-    cout << "3. дополнение к A (U - A)\n";
-    cout << "4. разность (A - B)\n";
-    cout << "5. симметрическая разность (A ^ B)\n";
-    cout << "6. возвращение в главное меню\n";
-    cout << "-------------------------\n";
-}
 
 void UIHandler::handleOperationsMenu() {
     if (A_.isEmpty() || B_.isEmpty()) {
@@ -150,7 +161,10 @@ void UIHandler::handleMainMenu() {
             case 4:
                 this->handleOperationsMenu();
                 break;
-            case 5:
+            case 5: 
+                this->handleDisplayMenu();
+                break;
+            case 6:
                 cout << "выход из программы.\n";
                 exit(0);
             default:
@@ -171,6 +185,45 @@ void UIHandler::handleMainMenu() {
     }
     catch (const std::exception& e) {
         cerr << "произошла непредвиденная ошибка: " << e.what() << '\n';
+    }
+}
+
+void UIHandler::handleDisplayMenu() {
+    while (true) {
+        try {
+            showDisplayMenu();
+            int choice = readInteger("выберите множество для вывода: ");
+            switch (choice) {
+                case 1:
+                    if (universe_.isEmpty()) {
+                        throw InvalidOperationException("универсум пуст. сначала сгенерируйте его.");
+                    }
+                    cout << "\n--- универсум ---\n";
+                    universe_.print();
+                    break;
+                case 2:
+                    if (A_.isEmpty()) {
+                        throw InvalidOperationException("множество A пусто. сначала заполните его.");
+                    }
+                    cout << "\n--- множество A ---\n";
+                    A_.print();
+                    break;
+                case 3:
+                    if (B_.isEmpty()) {
+                        throw InvalidOperationException("множество B пусто. сначала заполните его.");
+                    }
+                    cout << "\n--- множество B ---\n";
+                    B_.print();
+                    break;
+                case 4:
+                    return;
+                default:
+                    throw InvalidValueException("неверный выбор.");
+            }
+        }
+        catch (const std::exception& e) {
+            cerr << e.what() << '\n';
+        }
     }
 }
 

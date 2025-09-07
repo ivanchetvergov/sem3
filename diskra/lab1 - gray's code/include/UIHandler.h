@@ -12,6 +12,7 @@ private:
     Multiset& A_;
     Multiset& B_;
 
+    void handleDisplayMenu();
     void handleMainMenu();
     void handleGenerateUniverse();
     void handleManualFill();
@@ -19,4 +20,5 @@ private:
     void handleOperationsMenu();
     void showMenu();
     void showOperationsMenu();
+    void showDisplayMenu();
 };
