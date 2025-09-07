@@ -117,8 +117,14 @@ void UIHandler::handleOperationsMenu() {
         catch (const InvalidOperationException& e) {
             cerr << e.what() << '\n';
         }
+        catch (const InvalidValueException& e) {
+            cerr << e.what() << '\n';
+        }
         catch (const MultisetException& e) {
             cerr << e.what() << '\n';
+        }
+        catch (const std::out_of_range& e) { 
+            cerr << "\nerror: " << e.what() << '\n';
         }
         catch (const std::exception& e) {
             cerr << "произошла непредвиденная ошибка: " << e.what() << '\n';
@@ -151,8 +157,17 @@ void UIHandler::handleMainMenu() {
                 throw InvalidValueException("неверный выбор.");
         }
     }
+    catch (const InvalidOperationException& e) {
+        cerr << e.what() << '\n';
+    }
+    catch (const InvalidValueException& e) {
+        cerr << e.what() << '\n';
+    }
     catch (const MultisetException& e) {
         cerr << e.what() << '\n';
+    }
+    catch (const std::out_of_range& e) { 
+        cerr << "\nerror: " << e.what() << '\n';
     }
     catch (const std::exception& e) {
         cerr << "произошла непредвиденная ошибка: " << e.what() << '\n';
