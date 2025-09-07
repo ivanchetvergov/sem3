@@ -1,0 +1,43 @@
+// MyStack.h
+#pragma once
+
+#pragma once
+
+#include <iostream>
+#include <stdexcept>
+
+template <class T, int N>
+class MyStack {
+private:
+    T arr_[N];
+    int size_;
+
+public:
+    MyStack();
+    void Push(const T& element);
+    T Pop();
+    int GetSize() const;
+    int Capacity() const;
+    T& operator[](int index);
+};
+
+class StackOverflow : public std::runtime_error {
+public:
+    StackOverflow() : std::runtime_error("Stack is full.") {}
+};
+
+class StackUnderflow : public std::runtime_error {
+public:
+    StackUnderflow() : std::runtime_error("Stack is empty.") {}
+};
+
+class StackOutOfRange {
+public:
+    int index;
+    StackOutOfRange(int i) : index(i) {}
+    void Out() const {
+        std::cout << "\nIndex " << index << " is out of range.";
+    }
+};
+
+#include "../tpl/MyStack.tpp"
