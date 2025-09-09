@@ -15,13 +15,14 @@ void Multiset::fillRandomly(int n) {
 
     std::vector<std::string> grayCodes = generateGrayCode(n);
     if (grayCodes.empty() && n != 0) {
-        throw InvalidOperationException("не удалось сгенерировать коды Грея для разрядности " + std::to_string(n));
+        throw InvalidOperationException("не удалось сгенерировать коды \
+            Грея для разрядности " + std::to_string(n));
     }
     
     // используем более современный вариант rand() 
-    std::random_device rd;                              // источник энтропии
-    std::mt19937 gen(rd());                             // генератор (seed(энтропии))
-    std::uniform_int_distribution<> distrib(1, 100);    // равномерное распределние велечин
+    std::random_device rd;                             // источник энтропии
+    std::mt19937 gen(rd());                            // генератор (seed(энтропии))
+    std::uniform_int_distribution<> distrib(1, 100);   // равномерное распределние велечин
 
     for (const auto& code : grayCodes) {
         int cardinality = distrib(gen);

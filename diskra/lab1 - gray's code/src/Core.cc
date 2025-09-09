@@ -35,7 +35,7 @@ std::vector<std::string> generateGrayCode(int n) {
     }
 
     if (n == 0) {
-        return {""};
+        return {}; // исправлено с {""};
     }
 
     std::vector<std::string> grayCodes;

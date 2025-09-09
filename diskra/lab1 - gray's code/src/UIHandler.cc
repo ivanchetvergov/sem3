@@ -15,9 +15,11 @@ UIHandler::UIHandler(Multiset& universe, Multiset& A, Multiset& B)
 void UIHandler::showMenu() {
     cout << "\n--- главное меню ---\n";
     cout << "1. сгенерировать универсум мультимножеств\n";
-    cout << "2. заполнить множества A и B вручную\n";
-    cout << "3. заполнить множества A и B автоматически\n";
-    cout << "4. выполнить операции над множествами\n";
+    if (!universe_.isEmpty()) {
+        cout << "2. заполнить множества A и B вручную\n";
+        cout << "3. заполнить множества A и B автоматически\n";
+        cout << "4. выполнить операции над множествами\n";
+    }
     cout << "5. вывести множество\n";
     cout << "6. выход\n";
     cout << "---------------------\n";
@@ -33,14 +35,18 @@ void UIHandler::showDisplayMenu() {
 }
 
 void UIHandler::showOperationsMenu() {
-    cout << "\n--- подменю операций ---\n";
-    cout << "1. объединение (A | B)\n";
-    cout << "2. пересечение (A & B)\n";
-    cout << "3. дополнение к A (U - A)\n";
-    cout << "4. разность (A - B)\n";
-    cout << "5. симметрическая разность (A ^ B)\n";
-    cout << "6. возвращение в главное меню\n";
-    cout << "-------------------------\n";
+    cout << "\n-------- подменю операций ---------\n\n";
+    cout << "    1. объединение            (A | B)\n";
+    cout << "    2. пересечение            (A & B)\n";
+    cout << "    3. дополнение к A         (U \\ A)\n";
+    cout << "    4. логическая разность    (A \\ B)\n";
+    cout << "    5. симм. разность         (A ^ B)\n";
+    cout << "    6. сумма                  (A + B)\n";
+    cout << "    7. арифм. разность        (A - B)\n";
+    cout << "    8. произведение           (A * B)\n";
+    cout << "    9. деление                (A / B)\n";
+    cout << "    10. в главное меню\n";
+    cout << "-------------------------------------\n";
 }
 
 void UIHandler::handleGenerateUniverse() {
@@ -83,10 +89,6 @@ void UIHandler::handleAutomaticFill() {
 
 
 void UIHandler::handleOperationsMenu() {
-    if (A_.isEmpty() || B_.isEmpty()) {
-        throw InvalidOperationException("множества A и B еще не заполнены. сначала заполните их (опция 2 или 3).");
-    }
-    
     while (true) {
         try {
             showOperationsMenu();
@@ -94,7 +96,7 @@ void UIHandler::handleOperationsMenu() {
             Multiset result;
 
             switch (choice) {
-                case 1:
+                case 1: 
                     result = A_ | B_;
                     cout << "\n--- результат объединения ---\n";
                     result.print();
@@ -105,6 +107,9 @@ void UIHandler::handleOperationsMenu() {
                     result.print();
                     break;
                 case 3:
+                    if (universe_.isEmpty()) {
+                        throw InvalidOperationException("универсум пуст. дополнение невозможно.");
+                    }
                     result = universe_ - A_;
                     cout << "\n--- результат дополнения ---\n";
                     result.print();
@@ -120,6 +125,26 @@ void UIHandler::handleOperationsMenu() {
                     result.print();
                     break;
                 case 6:
+                    result = A_ + B_;
+                    cout << "\n--- результат арифметической суммы ---\n";
+                    result.print();
+                    break;
+                case 7: 
+                    result = A_.arithmeticDifference(B_);
+                    cout << "\n--- результат арифметической разности ---\n";
+                    result.print();
+                    break;
+                case 8:
+                    result = A_ * B_;
+                    cout << "\n--- результат арифметического произведения ---\n";
+                    result.print();
+                    break;
+                case 9:
+                    result = A_ / B_;
+                    cout << "\n--- результат арифметического деления ---\n";
+                    result.print();
+                    break;
+                case 10:
                     return;
                 default:
                     throw InvalidValueException("неверный выбор.");
@@ -128,18 +153,7 @@ void UIHandler::handleOperationsMenu() {
         catch (const InvalidOperationException& e) {
             cerr << e.what() << '\n';
         }
-        catch (const InvalidValueException& e) {
-            cerr << e.what() << '\n';
-        }
-        catch (const MultisetException& e) {
-            cerr << e.what() << '\n';
-        }
-        catch (const std::out_of_range& e) { 
-            cerr << "\nerror: " << e.what() << '\n';
-        }
-        catch (const std::exception& e) {
-            cerr << "произошла непредвиденная ошибка: " << e.what() << '\n';
-        }
+
     }
 }
 

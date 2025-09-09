@@ -28,6 +28,8 @@ public:
     bool isEmpty() const;
     void print() const;
 
+    Multiset arithmeticDifference(const Multiset& other) const;
+
 private:
     std::map<std::string, int> elements_;
     unsigned long long totalCardinality_;

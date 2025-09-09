@@ -5,20 +5,23 @@
 #include <iostream>
 #include <string>
 
+using std::cout;
+using std::cin;
+
 int readInteger(const std::string& data) {
     int value;
-    std::cout << data;
-    std::cin >> value;
+    cout << data;
+    cin >> value;
 
-    if (std::cin.fail()) {
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    if (cin.fail()) {
+        cin.clear();
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         throw InvalidValueException("некорректный ввод. ожидалось число.");
     }
 
-    char nextChar = std::cin.peek();
+    char nextChar = cin.peek();
     if (nextChar != EOF && nextChar != '\n') {
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         throw InvalidValueException("лишние символы после числа.");
     }
 
