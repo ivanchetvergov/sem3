@@ -1,4 +1,5 @@
-﻿#include "../include/stdafx.h"
+﻿// MyString.cpp
+#include "../include/stdafx.h"
 #include "../include/MyString.h"
 
 #include <algorithm>
