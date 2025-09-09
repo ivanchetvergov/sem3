@@ -378,8 +378,8 @@ int main()
 	//Вставьте перед 2-ым элементом вектора vChar2 с третьего по
 	//шестой элементы массива "aaabbbccc"
 
-	vector<char> list = {'a', 'a', 'a', 'b', 'b', 'b', 'c', 'c', 'c'};
-	vChar2.insert(vChar2.begin() + 1, list.begin() + 2, list.begin() + 6);
+	vector<char> lst = {'a', 'a', 'a', 'b', 'b', 'b', 'c', 'c', 'c'};
+	vChar2.insert(vChar2.begin() + 1, lst.begin() + 2, lst.begin() + 6);
   
 	//Сотрите c первого по десятый элементы vChar2
 
@@ -435,7 +435,6 @@ int main()
     printList(ptList1, "ptList1 after merge");
     printList(ptList2, "ptList2 after merge (now empty)");
 
-
 	//Исключение элемента из списка - remove()
 	//Исключите из списка элемент с определенным значением.
 	//Подсказка: для этого необходимо также переопределить
@@ -479,14 +478,16 @@ int main()
 
 	list<Vector*> ptrList;
 
-	ptr.push_back(new Vector(3.3, 4.4));
-    ptr.push_front(new Vector(1.1, 2.2));
-    ptr.push_back(new Vector(5.5, 6.6));
+	ptrList.push_back(new Vector(3.3, 4.4));
+    ptrList.push_front(new Vector(1.1, 2.2));
+    ptrList.push_back(new Vector(5.5, 6.6));
 
-    printList(ptrList, "list of Pointers to Vector");
-
-
-    auto it_ptr = std::find_if(ptrList.begin(), ptrList.end(), bothCoordsGreaterThanTwo);
+    auto it_ptr = std::find_if(
+		ptrList.begin(), ptrList.end(), 
+		[](const Vector* v){ 
+			return v && bothCoordsGreaterThanTwo(*v); 
+		}
+	);
     
     if (it_ptr != ptrList.end()) {
         cout << "\n\nfound Vector with both coords > 2: ";
@@ -495,8 +496,8 @@ int main()
         cout << "\n\nnot found. \n";
     }
 
-
-
+	for (Vector* v_ptr : ptrList) delete v_ptr; 
+    ptrList.clear();
 
 	//5в. Создайте список элементов Vector. Наполните список
 	//значениями. С помощью алгоритма replace() замените элемент
@@ -505,20 +506,20 @@ int main()
 	//условию на определенное значение. Подсказка: условие
 	//задается предикатом.
 
-	printVectorList(ptList1, "исходный список");
+	printList(ptList1, "исходный список");
 
-    std::replace(ptList1.begin(), ptList1.end(), Vector(5.5, 6.6), Vector(11.1, 11.1));
-    printVectorList(ptList1, "после replace(");
-
+    std::replace(
+		ptList1.begin(), ptList1.end(), Vector(5.5, 6.6), Vector(11.1, 11.1)
+	);
+    printList(ptList1, "после replace()");
 
     // используем лямбда-функцию как предикат
-    std::replace_if(ptList1.begin(), ptList1.end(), 
+    std::replace_if(ptList1.begin(), ptList1.end(),
         [](const Vector& v) { return v.GetX() > 3 && v.GetY() > 3; },
         Vector(-3.3, -3)
     );
-    printVectorList(ptList1, "После replace_if()");
+    printList(ptList1, "После replace_if()");
 
-	//Сформировали значения элементов списка
 
 	//5г. Создайте вектор строк (string). С помощью алгоритма count()
 	//сосчитайте количество одинаковых строк. С помощью алгоритма
@@ -531,20 +532,30 @@ int main()
 	strVect.push_back("Math");
 	strVect.push_back("Math");
 	strVect.push_back("Math");
-	strVect.push_back("M");
+	strVect.push_back("Alrebra");
 
-	cout << strVect.count("Math") << endl;
+	cout << std::count(strVect.begin(), strVect.end(), "Math") << endl;
 
-	std::count_if(ptList1.begin(), ptList1.end(), 
-        [](const string& s) { return std::strlen(s) > 3; },
-	);
+	char startChar = 'M';
+    int startsWithM = std::count_if(strVect.begin(), strVect.end(),
+        [startChar](const string& s) {
+            return !s.empty() && s[0] == startChar;
+        }
+    );
 
+	cout << startsWithM << endl;
 
 	//5д. С помощью алгоритма count_if() сосчитайте количество строк,
 	//которые совпадают с заданной строкой. Подсказка: смотри тему
 	//объекты-функции
 
-	
+	const string target = "Algebra"; 
+	int countWithFunctor = std::count_if(strVect.begin(), strVect.end(),
+        [&target](const string& s) {
+            return std::strcmp(s.c_str(), target.c_str()) == 0;
+        }
+    );
 
+	cout << countWithFunctor << endl;
 	cout <<"\n\n";
 }
