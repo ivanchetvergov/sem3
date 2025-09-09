@@ -14,6 +14,7 @@ public:
     Vector operator+(const Vector& other) const;
     Vector operator*(double scalar) const;
     double operator!() const;
+    bool operator<(const Vector& other) const;
 
     friend bool operator>(const Vector& l, const Vector& r);
     friend bool operator==(const Vector& l, const Vector& r);

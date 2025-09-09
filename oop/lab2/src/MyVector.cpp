@@ -21,6 +21,10 @@ Vector& Vector::operator= (const Vector& v)	// Присвоение
 	return *this;
 }
 
+bool Vector::operator<(const Vector& other) const {
+    return (x*x + y*y) < (other.x*other.y + other.y*other.y);
+}
+
 Vector Vector::operator+(const Vector& other) const{
     return Vector(x + other.x, y + other.y);
 }
