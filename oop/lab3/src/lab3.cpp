@@ -11,11 +11,14 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <list>
 
 using std::cout;
 using std::endl;
 using std::vector;
 using std::string;
+using std::array;
+using std::list;
 
 //============= Шаблон функции для вывода с помощью итератора
 template <class T> 
@@ -85,19 +88,31 @@ int main()
 		stack.Push(3);
 		
 		cout << "\nInteger Stack has: " << stack.GetSize() << " elements";
-
-//		stack.Push(4);	// Здесь должно быть "выброшено" исключение
+		try{
+			stack.Push(4);	// Здесь должно быть "выброшено" исключение
+		}
+		catch (const StackOverflow& e){
+			cout << e.what() << endl;
+		}
 
 		cout << "\nInteger Stack pops: " << stack.Pop();
 		cout << "\nInteger Stack pops: " << stack.Pop();
 		
 		cout << "\nInteger Stack has: " << stack.GetSize() << " elements";
 		stack.Pop();
-//		stack.Pop();		// Здесь должно быть "выброшено" исключение
+		try {
+			stack.Pop();		// Здесь должно быть "выброшено" исключение
+		}
+		catch (const StackUnderflow& e){
+			cout << e.what() << endl;
+		}
 		stack.Push(2);
-		
-		int i = stack[3];	// Здесь должно быть "выброшено" исключение
-		
+		try {
+			int i = stack[3];	// Здесь должно быть "выброшено" исключение
+		}
+		catch (const StackOutOfRange& e) {
+			e.Out();
+		}
 		MyStack<Vector, 5> ptStack;
 		
 		cout << "\nVector Stack capacity: " << ptStack.Capacity();
@@ -111,20 +126,18 @@ int main()
 		
 		cout << "\nVector Stack has: " << ptStack.GetSize() << " elements";
 	}
-	catch (StackOverflow)
+	catch (const StackOverflow& e)
 	{
-		cout << "\nStack overflow";
+		cout << e.what() << endl;;
 	}
-	catch (StackUnderflow)
+	catch (const StackUnderflow& e)
 	{
-		cout << "\nStack underflow";
+		cout << e.what() << endl;
 	}
-	catch (StackOutOfRange o)
+	catch (const StackOutOfRange& o)
 	{
 		o.Out();
 	}
-
-	// stop;
 
 	//=======================================================================
 	// Контейнеры стандартной библиотеки. Последовательности типа vector
@@ -257,8 +270,7 @@ int main()
 		for (size_t j=0;  j < vdd[i].size();  j++)
 			cout << vdd[i][j] << "  ";
 	}	
-  
-	// stop;
+
 
 	//===================================
 	// Простейшие действия с контейнерами
@@ -270,42 +282,41 @@ int main()
 	//Создайте и проинициализируйте вектор из элементов char. Размер -
 	//по желанию.
 
-	vector<char> cv = {'A', 'L', 'G', 'E', 'B', 'R', 'A'};
+	vector<char> charVector = {'A', 'L', 'G', 'E', 'B', 'R', 'A'};
 
 
 	//Создайте и проинициализируйте массив из элементов char. Размер -
 	//по желанию.
-	size_t sz = 6;
+	const size_t sz = 6;
 	array<char, sz> ca;
 	for (size_t i = 0; i < sz; ++i){
-		ca = static_cast<char>('c' + i);
+		ca[i] = static_cast<char>('c' + i);
 	} 
 
 	//Получите значение первого элемента вектора ( front() )
 
-	cout << cv.front() << endl;
+	cout << charVector.front() << endl;
 
 	//Получите значение последнего элемента вектора ( back() )
 
-	cout << cv.back() << endl;
+	cout << charVector.back() << endl;
 
 	//Получите размер вектора
 
-	cout << cv.size() << endl;
+	cout << charVector.size() << endl;
 
 	//Присвойте вектору любой диапазон из значений массива cMas.
 
 	cout << "старый размер: " << charVector.size() << endl;
 
-	cv.assign(ca.begin() + 1, char.begin() + 3);
+	charVector.assign(ca.begin() + 1, ca.begin() + 3);
 
 	//Проверьте размер вектора, первый и последний элементы.
 
 	cout << "новый размер: " << charVector.size() << endl;
     cout << "новый первый: " << charVector.front() << endl;
     cout << "новый послед: " << charVector.back() << endl;
-  
-	// stop;
+
 
 
 	//3в. Доступ к произвольным элементам вектора с проверкой - at()
@@ -329,8 +340,7 @@ int main()
 	for (size_t i = 0; i < charArray.size(); ++i) {
         vChar2[i * 2 + 1] = charArray[i];
     }
-	
-	//   stop;
+
 	//Попробуйте "выйти" за границы вектора с помощью at() и
 	//с помощью []. Обратите внимание: что происходит при
 	//попытке обращения к несуществующему элементу в обоих случаях
@@ -342,15 +352,13 @@ int main()
     }
 
 	char c = vChar2[66];
-  
-	// stop;
+
 
 	//3г.Добавьте в конец вектора vChar2  - букву Z (push_back()). Для
 	//расширения кругозора можете ее сразу же и выкинуть (pop_back())
 
 	vChar2.push_back('Z');
-  
-	// stop;
+
 
 	//3д. Вставка-удаление элемента последовательности insert() - erase()
 	//Очистка последовательности - clear()
@@ -378,62 +386,72 @@ int main()
 	if (vChar2.size() >= 10) 
         vChar2.erase(vChar2.begin(), vChar2.begin() + 10);
 
-	// stop;
-
 	//Уничтожьте все элементы последовательности - clear()
 
 	vChar2.clear();
-
-	// stop;
 
 	//Создание двухмерного массива
 
 	vector<vector<int>> mtx(3, vector<int>(6, 3));
 
-	// stop;
-
-///////////////////////////////////////////////////////////////////
-/*
 	//Задание 4. Списки. Операции, характерные для списков.
 	//Создайте два пустых списка из элементов Vector - ptList1 и
 	//ptList2
-	
+
+	list<Vector> ptList1;
+	list<Vector> ptList2;
 
 	//Наполните оба списка значениями с помощью методов push_back(),
 	//push_front, insrert()
 
+	ptList1.push_back(Vector(3.3, 4.4));
+    ptList1.push_front(Vector(1.1, 2.2));
+    ptList1.push_back(Vector(5.5, 6.6));
+    ptList1.insert(ptList1.begin(), Vector(0.0, 0.0));
+
+	ptList2.push_back(Vector(2.0, 2.0));
+    ptList2.push_front(Vector(6.0, 8.0));
+    ptList2.push_back(Vector(4.0, 3.0));
 
 
 	//Отсортируйте списки - sort().
 	//Подсказка: для того, чтобы работала сортировка, в классе Vector
 	//должен быть переопределен оператор "<"
 
-  
-	// stop;
+	printList(ptList1, "ptList1 before sort");
+    printList(ptList2, "ptList2 before sort");
+
+    ptList1.sort();
+    ptList2.sort();
+
+    printList(ptList1, "ptList1 after sort");
+    printList(ptList2, "ptList2 after sort");
+
 
 	//Объедините отсортированные списки - merge(). Посмотрите: что
 	//при этом происходит со вторым списком.
 
+	ptList1.merge(ptList2);
+    printList(ptList1, "ptList1 after merge");
+    printList(ptList2, "ptList2 after merge (now empty)");
 
-	// stop;
 
 	//Исключение элемента из списка - remove()
 	//Исключите из списка элемент с определенным значением.
 	//Подсказка: для этого необходимо также переопределить
 	//в классе Vector оператор "=="
 
+	ptList1.remove(Vector(1.1, 2.2));
+    printList(ptList1, "ptList1 after removing (1.1, 2.2)");
 
-	// stop;
-*/
-///////////////////////////////////////////////////////////////////
-/*
 	//Задание 5. Стандартные алгоритмы.Подключите заголовочный файл
 	// <algorithm>
 	//5а. Выведите на экран элементы ptList1 из предыдущего
 	//задания с помощью алгоритма for_each()
 
-
-	// stop;
+	std::for_each(ptList1.begin(), ptList1.end(), [](const Vector& v) {
+    	v.Out();
+	});
 
 	//5б.С помощью алгоритма find() найдите итератор на элемент Vector с
 	//определенным значением. С помощью алгоритма find_if() найдите
@@ -443,18 +461,42 @@ int main()
 	//и возвращает boolean-значение (предикат может быть как глобальной
 	//функцией, так и методом класса)
 
+	auto it1 = std::find(ptList1.begin(), ptList1.end(), Vector(3.3, 4.4));
+    if (it1 != ptList1.end()) {
+        std::cout << "\nfound Vector (3.3., 4.4)!\n";
+    }
 
-
-	//   stop;
+	auto it2 = std::find_if(ptList1.begin(), ptList1.end(), bothCoordsGreaterThanTwo);
+    if (it2 != ptList1.end()) {
+        std::cout << "\nfound Vector with both coords > 2:";
+        it2->Out();
+    }
 
 	//Создайте список из указателей на элеметы Vector. С помощью 
 	//алгоритма find_if() и предиката (можно использовать предикат - 
 	//метод класса Vector, определенный в предыдущем задании) найдите в
 	//последовательности элемент, удовлетворяющий условию
 
-  
-	
-	//   stop;
+	list<Vector*> ptrList;
+
+	ptr.push_back(new Vector(3.3, 4.4));
+    ptr.push_front(new Vector(1.1, 2.2));
+    ptr.push_back(new Vector(5.5, 6.6));
+
+    printList(ptrList, "list of Pointers to Vector");
+
+
+    auto it_ptr = std::find_if(ptrList.begin(), ptrList.end(), bothCoordsGreaterThanTwo);
+    
+    if (it_ptr != ptrList.end()) {
+        cout << "\n\nfound Vector with both coords > 2: ";
+        (*it_ptr)->Out();
+    } else {
+        cout << "\n\nnot found. \n";
+    }
+
+
+
 
 	//5в. Создайте список элементов Vector. Наполните список
 	//значениями. С помощью алгоритма replace() замените элемент
@@ -463,26 +505,46 @@ int main()
 	//условию на определенное значение. Подсказка: условие
 	//задается предикатом.
 
+	printVectorList(ptList1, "исходный список");
 
-  //Сформировали значения элементов списка
+    std::replace(ptList1.begin(), ptList1.end(), Vector(5.5, 6.6), Vector(11.1, 11.1));
+    printVectorList(ptList1, "после replace(");
 
-  
-	// stop;
 
+    // используем лямбда-функцию как предикат
+    std::replace_if(ptList1.begin(), ptList1.end(), 
+        [](const Vector& v) { return v.GetX() > 3 && v.GetY() > 3; },
+        Vector(-3.3, -3)
+    );
+    printVectorList(ptList1, "После replace_if()");
+
+	//Сформировали значения элементов списка
 
 	//5г. Создайте вектор строк (string). С помощью алгоритма count()
 	//сосчитайте количество одинаковых строк. С помощью алгоритма
 	//count_if() сосчитайте количество строк, начинающихся с заданной
 	//буквы
 
+	vector<string> strVect;
+
+	strVect.push_back("Math");
+	strVect.push_back("Math");
+	strVect.push_back("Math");
+	strVect.push_back("Math");
+	strVect.push_back("M");
+
+	cout << strVect.count("Math") << endl;
+
+	std::count_if(ptList1.begin(), ptList1.end(), 
+        [](const string& s) { return std::strlen(s) > 3; },
+	);
+
 
 	//5д. С помощью алгоритма count_if() сосчитайте количество строк,
 	//которые совпадают с заданной строкой. Подсказка: смотри тему
 	//объекты-функции
 
-
-	// stop;
-*/
+	
 
 	cout <<"\n\n";
 }

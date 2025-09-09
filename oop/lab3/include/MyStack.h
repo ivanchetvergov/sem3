@@ -23,12 +23,12 @@ public:
 
 class StackOverflow : public std::runtime_error {
 public:
-    StackOverflow() : std::runtime_error("Stack is full.") {}
+    StackOverflow() : std::runtime_error("\nError! Stack is full!") {}
 };
 
 class StackUnderflow : public std::runtime_error {
 public:
-    StackUnderflow() : std::runtime_error("Stack is empty.") {}
+    StackUnderflow() : std::runtime_error("\nError! Stack is empty!") {}
 };
 
 class StackOutOfRange {
@@ -36,7 +36,7 @@ public:
     int index;
     StackOutOfRange(int i) : index(i) {}
     void Out() const {
-        std::cout << "\nIndex " << index << " is out of range.";
+        std::cout << "\nError! Index " << index << " is out of range!\n";
     }
 };
 
