@@ -200,7 +200,6 @@ int main()
 	double ar[] = { 0., 1., 2., 3., 4., 5. };
 	vector<double> va(ar, ar + 3);
 
-	//vector<double> va 
 	pr (va, "Copy part of array");
 	
 	// Создайте вектор символов, который является копией части обычной строки
@@ -248,7 +247,6 @@ int main()
 	for (const auto& el : vpNew)
 		el->Out();
 
-
 	// На базе шаблона vector создание двухмерный массив и
 	// заполните его значениями разными способами.
 	// Первый вариант - прямоугольная матрица
@@ -270,7 +268,7 @@ int main()
 		for (size_t j=0;  j < vdd[i].size();  j++)
 			cout << vdd[i][j] << "  ";
 	}	
-
+	cout << endl;
 
 	//===================================
 	// Простейшие действия с контейнерами
@@ -283,7 +281,6 @@ int main()
 	//по желанию.
 
 	vector<char> charVector = {'A', 'L', 'G', 'E', 'B', 'R', 'A'};
-
 
 	//Создайте и проинициализируйте массив из элементов char. Размер -
 	//по желанию.
@@ -317,8 +314,6 @@ int main()
     cout << "новый первый: " << charVector.front() << endl;
     cout << "новый послед: " << charVector.back() << endl;
 
-
-
 	//3в. Доступ к произвольным элементам вектора с проверкой - at()
 	//и без проверки - []
 	//Создайте неинициализированный вектор из 8 элементов char - vChar2.
@@ -333,7 +328,7 @@ int main()
 
 	for (size_t i = 0; i < vChar1.size(); ++i) {
         if (i < 4) { 
-             vChar2.at(i * 2) = vChar1.at(i);
+            vChar2.at(i * 2) = vChar1.at(i);
         }
     }
 
@@ -351,19 +346,16 @@ int main()
         std::cerr << "except catched: " << e.what() << std::endl;
     }
 
-	char c = vChar2[66];
-
+	char c = vChar2[66]; // мусор
 
 	//3г.Добавьте в конец вектора vChar2  - букву Z (push_back()). Для
 	//расширения кругозора можете ее сразу же и выкинуть (pop_back())
 
 	vChar2.push_back('Z');
-
+	vChar2.pop_back();
 
 	//3д. Вставка-удаление элемента последовательности insert() - erase()
 	//Очистка последовательности - clear()
-
-
 
 	//Вставьте перед каждым элементом вектора vChar2 букву 'W'
 
@@ -378,8 +370,8 @@ int main()
 	//Вставьте перед 2-ым элементом вектора vChar2 с третьего по
 	//шестой элементы массива "aaabbbccc"
 
-	vector<char> lst = {'a', 'a', 'a', 'b', 'b', 'b', 'c', 'c', 'c'};
-	vChar2.insert(vChar2.begin() + 1, lst.begin() + 2, lst.begin() + 6);
+	vector<char> letters = {'a', 'a', 'a', 'b', 'b', 'b', 'c', 'c', 'c'};
+	vChar2.insert(vChar2.begin() + 1, letters.begin() + 2, letters.begin() + 6);
   
 	//Сотрите c первого по десятый элементы vChar2
 
@@ -519,7 +511,6 @@ int main()
         Vector(-3.3, -3)
     );
     printList(ptList1, "После replace_if()");
-
 
 	//5г. Создайте вектор строк (string). С помощью алгоритма count()
 	//сосчитайте количество одинаковых строк. С помощью алгоритма

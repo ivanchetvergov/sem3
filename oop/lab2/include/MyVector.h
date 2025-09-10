@@ -19,6 +19,8 @@ public:
     friend bool operator>(const Vector& l, const Vector& r);
     friend bool operator==(const Vector& l, const Vector& r);
 
+    friend double operator*(const Vector& v1, const Vector& v2);
+
     void Move(const Vector& v) override;
     void Out() const override;
     double Area() const override;

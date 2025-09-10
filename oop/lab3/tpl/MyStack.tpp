@@ -38,3 +38,11 @@ T& MyStack<T, N>::operator[](int index) {
     }
     return arr_[index];
 }
+
+template <class T, int N>
+const T MyStack<T, N>::operator[](int index) const {
+    if (index < 0 || index > size_) {
+        throw StackOutOfRange(index);
+    }
+    return arr_[index];
+}

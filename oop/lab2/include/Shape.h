@@ -1,7 +1,6 @@
 //Shape.h
 #pragma once
 
-// #include "MyVector.h" 
 class Vector; // избежал цикл. include
 
 class Shape {

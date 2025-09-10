@@ -8,10 +8,6 @@
 
 template <class T, int N>
 class MyStack {
-private:
-    T arr_[N];
-    int size_;
-
 public:
     MyStack();
     void Push(const T& element);
@@ -19,6 +15,11 @@ public:
     int GetSize() const;
     int Capacity() const;
     T& operator[](int index);
+    const T operator[](int index) const;
+
+private:
+    T arr_[N];
+    int size_;
 };
 
 class StackOverflow : public std::runtime_error {
