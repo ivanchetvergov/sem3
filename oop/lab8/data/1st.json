@@ -7,7 +7,29 @@
         "lastName": "Четвергов",
         "middleName": "Сергеевич",
         "phoneNumbers": {
-            "Рабочий": "+79235195885"
+            "Рабочий": "+79235195883"
+        }
+    },
+    {
+        "address": "Харченко 16",
+        "birthDate": "2006-11-13",
+        "email": "seleznev@mail.ru",
+        "firstName": "Кирилл",
+        "lastName": "Селезнев",
+        "middleName": "Na",
+        "phoneNumbers": {
+            "Рабочий": "+79287766000"
+        }
+    },
+    {
+        "address": "Харченко 16",
+        "birthDate": "2006-12-13",
+        "email": "adiabat@ya.ru",
+        "firstName": "Тимур",
+        "lastName": "Адиатуллин",
+        "middleName": "Ренатович",
+        "phoneNumbers": {
+            "Рабочий": "+79953448227"
         }
     }
 ]

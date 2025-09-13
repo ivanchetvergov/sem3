@@ -17,63 +17,63 @@ void MainWindow::setupUi()
     QWidget* centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
-    m_mainLayout = new QVBoxLayout(centralWidget);
+    mainLayout_ = new QVBoxLayout(centralWidget);
     
     QGridLayout* inputLayout = new QGridLayout();
     
-    m_lastNameInput = new QLineEdit();
-    m_firstNameInput = new QLineEdit();
-    m_middleNameInput = new QLineEdit();
-    m_addressInput = new QLineEdit();
-    m_birthDateInput = new QDateEdit(QDate::currentDate());
-    m_birthDateInput->setDisplayFormat("dd.MM.yyyy");
-    m_emailInput = new QLineEdit();
-    m_phoneInput = new QLineEdit();
+    lastNameInput_ = new QLineEdit();
+    firstNameInput_ = new QLineEdit();
+    middleNameInput_ = new QLineEdit();
+    addressInput_ = new QLineEdit();
+    birthDateInput_ = new QDateEdit(QDate::currentDate());
+    birthDateInput_->setDisplayFormat("dd.MM.yyyy");
+    emailInput_ = new QLineEdit();
+    phoneInput_ = new QLineEdit();
     
     inputLayout->addWidget(new QLabel("Фамилия:"), 0, 0);
-    inputLayout->addWidget(m_lastNameInput, 0, 1);
+    inputLayout->addWidget(lastNameInput_, 0, 1);
     inputLayout->addWidget(new QLabel("Имя:"), 1, 0);
-    inputLayout->addWidget(m_firstNameInput, 1, 1);
+    inputLayout->addWidget(firstNameInput_, 1, 1);
     inputLayout->addWidget(new QLabel("Отчество:"), 2, 0);
-    inputLayout->addWidget(m_middleNameInput, 2, 1);
+    inputLayout->addWidget(middleNameInput_, 2, 1);
     inputLayout->addWidget(new QLabel("Адрес:"), 3, 0);
-    inputLayout->addWidget(m_addressInput, 3, 1);
+    inputLayout->addWidget(addressInput_, 3, 1);
     inputLayout->addWidget(new QLabel("Дата рождения:"), 4, 0);
-    inputLayout->addWidget(m_birthDateInput, 4, 1);
+    inputLayout->addWidget(birthDateInput_, 4, 1);
     inputLayout->addWidget(new QLabel("Email:"), 5, 0);
-    inputLayout->addWidget(m_emailInput, 5, 1);
+    inputLayout->addWidget(emailInput_, 5, 1);
     inputLayout->addWidget(new QLabel("Телефон:"), 6, 0);
-    inputLayout->addWidget(m_phoneInput, 6, 1);
+    inputLayout->addWidget(phoneInput_, 6, 1);
     
-    m_mainLayout->addLayout(inputLayout);
+    mainLayout_->addLayout(inputLayout);
     
     QHBoxLayout* buttonLayout = new QHBoxLayout();
-    m_addButton = new QPushButton("Добавить");
-    m_removeButton = new QPushButton("Удалить");
-    m_editButton = new QPushButton("Редактировать");
-    m_cancelButton = new QPushButton("Отмена");
+    addButton_ = new QPushButton("Добавить");
+    removeButton_ = new QPushButton("Удалить");
+    editButton_ = new QPushButton("Редактировать");
+    cancelButton_ = new QPushButton("Отмена");
 
-    m_removeButton->setEnabled(false);
-    m_editButton->setEnabled(false);
-    m_cancelButton->hide();
+    removeButton_->setEnabled(false);
+    editButton_->setEnabled(false);
+    cancelButton_->hide();
     
-    buttonLayout->addWidget(m_addButton);
-    buttonLayout->addWidget(m_removeButton);
-    buttonLayout->addWidget(m_editButton);
-    buttonLayout->addWidget(m_cancelButton);
-    m_mainLayout->addLayout(buttonLayout);
+    buttonLayout->addWidget(addButton_);
+    buttonLayout->addWidget(removeButton_);
+    buttonLayout->addWidget(editButton_);
+    buttonLayout->addWidget(cancelButton_);
+    mainLayout_->addLayout(buttonLayout);
 
     QHBoxLayout* searchLayout = new QHBoxLayout();
-    m_searchInput = new QLineEdit();
-    m_searchInput->setPlaceholderText("Поиск по имени, фамилии или email...");
+    searchInput_ = new QLineEdit();
+    searchInput_->setPlaceholderText("Поиск по имени, фамилии или email...");
     searchLayout->addWidget(new QLabel("Поиск:"));
-    searchLayout->addWidget(m_searchInput);
-    m_mainLayout->addLayout(searchLayout);
+    searchLayout->addWidget(searchInput_);
+    mainLayout_->addLayout(searchLayout);
 
-    m_tableView = new QTableView();
-    m_tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    m_tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_tableView->setSelectionMode(QAbstractItemView::SingleSelection);
-    m_tableView->setEditTriggers(QAbstractItemView::NoEditTriggers); 
-    m_mainLayout->addWidget(m_tableView);
+    tableView_ = new QTableView();
+    tableView_->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView_->setEditTriggers(QAbstractItemView::NoEditTriggers); 
+    mainLayout_->addWidget(tableView_);
 }

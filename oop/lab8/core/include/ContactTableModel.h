@@ -32,5 +32,5 @@ public slots:
     void resetTable();
 
 private:
-    ContactManager* m_contactManager;
+    ContactManager* contactManager_;
 };

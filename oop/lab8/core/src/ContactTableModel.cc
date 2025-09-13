@@ -3,11 +3,11 @@
 
 ContactTableModel::ContactTableModel(ContactManager* contactManager, QObject* parent)
     : QAbstractTableModel(parent),
-      m_contactManager(contactManager) {}
+      contactManager_(contactManager) {}
 
 int ContactTableModel::rowCount(const QModelIndex& parent) const {
     Q_UNUSED(parent);
-    return m_contactManager->getContacts().size();
+    return contactManager_->getContacts().size();
 }
 
 int ContactTableModel::columnCount(const QModelIndex& parent) const {
@@ -16,11 +16,11 @@ int ContactTableModel::columnCount(const QModelIndex& parent) const {
 }
 
 QVariant ContactTableModel::data(const QModelIndex &index, int role) const {
-    if (!index.isValid() || index.row() >= m_contactManager->getContacts().size()) {
+    if (!index.isValid() || index.row() >= contactManager_->getContacts().size()) {
         return QVariant();
     }
 
-    const QList<Contact>& contacts = m_contactManager->getContacts();
+    const QList<Contact>& contacts = contactManager_->getContacts();
     const Contact& contact = contacts.at(index.row());
 
     if (role == Qt::DisplayRole || role == Qt::EditRole) {
@@ -57,7 +57,7 @@ QVariant ContactTableModel::headerData(int section, Qt::Orientation orientation,
 bool ContactTableModel::setData(const QModelIndex& index, const QVariant& value, int role) {
     if (index.isValid() && role == Qt::EditRole) {
         // Получаем ссылку на контакт, а не копию
-        QList<Contact>& contacts = m_contactManager->getContactsMutable(); 
+        QList<Contact>& contacts = contactManager_->getContactsMutable(); 
         Contact& contact = contacts[index.row()];
         
         switch (index.column()) {
@@ -82,29 +82,29 @@ Qt::ItemFlags ContactTableModel::flags(const QModelIndex& index) const {
 }
 
 void ContactTableModel::addContact(const Contact& contact) {
-    int newRow = m_contactManager->getContacts().size();
+    int newRow = contactManager_->getContacts().size();
     beginInsertRows(QModelIndex(), newRow, newRow);
-    m_contactManager->addContact(contact);
+    contactManager_->addContact(contact);
     endInsertRows();
 }
 
 void ContactTableModel::removeContact(int index) {
-    if (index >= 0 && index < m_contactManager->getContacts().size()) {
+    if (index >= 0 && index < contactManager_->getContacts().size()) {
         beginRemoveRows(QModelIndex(), index, index);
-        m_contactManager->removeContact(index);
+        contactManager_->removeContact(index);
         endRemoveRows();
     }
 }
 
 void ContactTableModel::updateContact(int index, const Contact& contact) {
-    if (index >= 0 && index < m_contactManager->getContacts().size()) {
-        m_contactManager->updateContact(index, contact);
+    if (index >= 0 && index < contactManager_->getContacts().size()) {
+        contactManager_->updateContact(index, contact);
         emit dataChanged(this->index(index, 0), this->index(index, columnCount() - 1));
     }
 }
 
 const Contact& ContactTableModel::getContact(int row) const {
-    return *m_contactManager->getContact(row);
+    return *contactManager_->getContact(row);
 }
 
 void ContactTableModel::resetTable() {

@@ -38,32 +38,32 @@ private:
     Contact getCurrentContactFromForm() const;
     bool validateContact(const Contact& contact);
 
-    ContactManager m_contactManager;
-    ContactTableModel* m_tableModel; 
-    QTableView* m_tableView;         
+    ContactManager contactManager_;
+    ContactTableModel* tableModel_; 
+    QTableView* tableView_;         
 
-    QDataWidgetMapper* m_mapper;     
+    QDataWidgetMapper* mapper_;     
 
-    QLineEdit* m_firstNameInput;
-    QLineEdit* m_lastNameInput;
-    QLineEdit* m_middleNameInput;
-    QLineEdit* m_addressInput;
-    QDateEdit* m_birthDateInput;
-    QLineEdit* m_emailInput;
-    QLineEdit* m_phoneInput;
+    QLineEdit* firstNameInput_;
+    QLineEdit* lastNameInput_;
+    QLineEdit* middleNameInput_;
+    QLineEdit* addressInput_;
+    QDateEdit* birthDateInput_;
+    QLineEdit* emailInput_;
+    QLineEdit* phoneInput_;
 
-    QPushButton* m_addButton;
-    QPushButton* m_removeButton;
-    QPushButton* m_editButton;
-    QPushButton* m_cancelButton;
+    QPushButton* addButton_;
+    QPushButton* removeButton_;
+    QPushButton* editButton_;
+    QPushButton* cancelButton_;
 
-    bool m_isInEditMode = false;
+    bool isInEditMode_ = false;
     void setEditingMode(bool isInEditMode);
     
     // поиск и сортировка
-    QLineEdit* m_searchInput;
-    QComboBox* m_sortComboBox;
+    QLineEdit* searchInput_;
+    QComboBox* sortComboBox_;
 
-    QVBoxLayout* m_mainLayout;
-    QSortFilterProxyModel* m_proxyModel;
+    QVBoxLayout* mainLayout_;
+    QSortFilterProxyModel* proxyModel_;
 };
