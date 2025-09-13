@@ -1,0 +1,13 @@
+[
+    {
+        "address": "13-ая линия ВО 46А",
+        "birthDate": "2005-10-14",
+        "email": "ivar5165885@gmail.com",
+        "firstName": "Иван",
+        "lastName": "Четвергов",
+        "middleName": "Сергеевич",
+        "phoneNumbers": {
+            "Рабочий": "+79235195885"
+        }
+    }
+]
