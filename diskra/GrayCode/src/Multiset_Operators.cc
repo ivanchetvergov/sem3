@@ -21,7 +21,7 @@ Multiset Multiset::unionWith(const Multiset& other) const {
 // (базовый метод) A \ B (Правильная разность мультимножеств)
 // TODO: A and not B
 Multiset Multiset::difference(const Multiset& other) const {
-    Multiset result = *this; // Создаем копию A
+    Multiset result = *this; // cоздаем копию A
     for (const auto& pair : other.elements_) { // перебираем B
         const std::string& code = pair.first;
         const int other_cardinality = pair.second;
