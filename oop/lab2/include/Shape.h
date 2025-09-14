@@ -17,6 +17,7 @@ public:
 
     static int GetCount() { return Count; }; 
     static Shape* GetHead() { return head_; }
+    
     Shape* GetNext() const { return next_shape; }
 private:
     static int Count; 

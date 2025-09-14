@@ -7,6 +7,7 @@
 class Rect : public Shape {
 public:
     Rect();
+    ~Rect() override;
     Rect(const Rect& other);
     Rect(double left, double top, double right, double bottom);
     Rect(const Vector& lt, const Vector& rb);

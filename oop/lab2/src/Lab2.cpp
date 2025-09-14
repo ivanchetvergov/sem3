@@ -281,6 +281,7 @@ int main()
 	cout << "\n\n\tTest abstract Shapes\n";
 	{
 		Rect* pr = new Rect(0, 0, 5, 5);	// In the heap
+		cout << "-----" << endl;
 		Rect r (10, 10, 100, 100);			// On stack frame
 
 		Circle* pc = new Circle (Vector(10, 10), 5);// In the heap

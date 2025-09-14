@@ -11,6 +11,8 @@ Shape::Shape() : next_shape(nullptr) {
     else tail_->next_shape = this;
     tail_ = this;
     Count++;
+    std::cout << "вызван Shape()" << std::endl;
+
 }
 
 Shape::~Shape() {
@@ -31,6 +33,7 @@ Shape::~Shape() {
             }
         }
     }
+    std::cout << "вызван ~Shape" << std::endl;
     Count--;
 }
 
