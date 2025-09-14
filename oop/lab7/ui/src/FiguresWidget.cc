@@ -4,32 +4,37 @@
 
 FiguresWidget::FiguresWidget(QWidget* parent) : QWidget(parent) {
     setFocusPolicy(Qt::StrongFocus);
-    setMouseTracking(true); 
+    setMouseTracking(true);
 }
 
 FiguresWidget::~FiguresWidget() {
     clearFigures();
 }
 
-//--- методы управления коллекцией ---
+//--- Управление коллекцией ---
 
 void FiguresWidget::addFigure(Figure* figure) {
     figures_.append(figure);
-    update(); 
+    update();
 }
 
-void FiguresWidget::removeActiveFigure() {
-    if (activeFigure_) {
-        figures_.removeOne(activeFigure_); 
-        delete activeFigure_;           
-        activeFigure_ = nullptr;         
+// Новый метод для удаления последнего элемента
+void FiguresWidget::removeFigure() {
+    if (!figures_.isEmpty()) {
+        Figure* lastFigure = figures_.last();
+        // Если последний элемент активен, сбрасываем activeFigure_
+        if (lastFigure == activeFigure_) {
+            activeFigure_ = nullptr;
+        }
+        figures_.removeLast(); // Удаляем последний элемент из вектора
+        delete lastFigure; // Освобождаем память
         update();
     }
 }
 
 void FiguresWidget::clearFigures() {
     qDeleteAll(figures_);
-    figures_.clear();     
+    figures_.clear();
     activeFigure_ = nullptr;
     update();
 }
@@ -39,36 +44,33 @@ void FiguresWidget::clearFigures() {
 void FiguresWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    // рисуем все фигуры кроме активной.
-    // проходимся в обратном порядке
-    for (int i = figures_.size() - 1; i >= 0; --i) {
-        if (figures_[i] != activeFigure_) {
-            figures_[i]->draw(&painter);
-        }
-    }
 
-    // рисуем активную фигуру последней
-    if (activeFigure_) {
-        activeFigure_->draw(&painter);
+    // рисуем все фигуры в порядке их добавления
+    for (Figure* figure : figures_) {
+        figure->draw(&painter);
     }
 }
 
 void FiguresWidget::mousePressEvent(QMouseEvent* event) {
-    // сбрасываем предыдущую активную фигуру
+    // Деактивируем предыдущую фигуру, если она есть
     if (activeFigure_) {
         activeFigure_->isActive_ = false;
         activeFigure_ = nullptr;
     }
-    
-    // проходим по фигурам в обратном порядке
+
+    // Ищем фигуру в обратном порядке для выбора верхнего элемента
     for (int i = figures_.size() - 1; i >= 0; --i) {
         if (figures_[i]->contains(event->pos())) {
             activeFigure_ = figures_[i];
             activeFigure_->isActive_ = true;
-            // перемещаем активную фигуру в конец вектора
+            
+            // Удаляем фигуру из текущей позиции
+            figures_.removeAt(i);
+            
+            // Добавляем её в конец вектора, чтобы она рисовалась поверх остальных
             figures_.append(activeFigure_);
-            figures_.removeOne(activeFigure_); 
-            break; 
+            
+            break; // Останавливаем поиск
         }
     }
     

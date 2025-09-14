@@ -16,8 +16,10 @@ public:
     ~FiguresWidget() override;
 
     void addFigure(Figure* figure);
-    void removeActiveFigure();
+    void removeLastFigure();
     void clearFigures();
+
+    void removeFigure();
     
 protected:
     void paintEvent(QPaintEvent* event) override;

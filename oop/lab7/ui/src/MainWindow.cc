@@ -70,5 +70,5 @@ void MainWindow::on_add_button_clicked() {
 }
 
 void MainWindow::on_remove_button_clicked() {
-    figuresWidget_->removeActiveFigure();
+    figuresWidget_->removeFigure();
 }
