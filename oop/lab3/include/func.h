@@ -23,4 +23,13 @@ bool bothCoordsGreaterThanTwo(const Vector& v) {
     return (v.GetX() > 2.0) && (v.GetY() > 2.0);
 }
 
+template <typename T>
+void printContainer(const T& cont);
+
+template <typename T>
+void printPop(T container);
+
+template <typename T>
+void printMap(const T& container);
+
 #include "../tpl/func.tpp" 

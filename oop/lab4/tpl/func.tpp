@@ -1,7 +1,7 @@
 // func.tpp
 
-template <typename Container>
-void printContainer(const Container& cont) {
+template <typename T>
+void printContainer(const T& cont) {
     for (const auto& item : cont) {
         std::cout << item << " ";
     }
@@ -11,11 +11,17 @@ void printContainer(const Container& cont) {
 template <typename T>
 void printPop(T container) {
     while (!container.empty()) {
-        std::cout << container.top() << " "; // front() for queue
+        // проверяем std::queue
+        // constexpr директива компилятора
+        if constexpr (std::is_same_v<T, std::queue<typename T::value_type>>) {
+            std::cout << container.front() << " ";
+        } else {
+            std::cout << container.top() << " ";
+        }
         container.pop();
     }
     std::cout << std::endl;
-} 
+}
 
 template <typename T>
 void printMap(const T& container) {

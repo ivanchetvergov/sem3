@@ -10,7 +10,7 @@ Rect::Rect(double left, double top, double right, double bottom)
     : ptLT_(left, top), ptRB_(right, bottom) {}
 
 Rect::~Rect(){
-    std::cout << "\nвызван ~Rect" << std::endl;
+    // std::cout << "\nвызван ~Rect" << std::endl;
 }
 
 Rect::Rect(const Vector& lt, const Vector& rb)

@@ -4,9 +4,11 @@
 #include <QPushButton>
 
 class MyWidget : public QWidget {
+    Q_OBJECT
 public:
     MyWidget(QWidget* parent = nullptr) : QWidget(parent) {
         setWindowTitle("Hello World App");
+        // void QWidget::setGeometry(int x, int y, int width, int height);
         setGeometry(100, 100, 400, 200);
 
         QLabel* label = new QLabel("Hello World!", this);
@@ -17,11 +19,10 @@ public:
 
         // подключение сигнала (нажатие на кнопку) к слоту (закрытие приложения)
         // (const QObject* sender, const char* signal, const QObject* receiver, const char* method)
+        // QApplication::instance() возвращает ед обьект нашего приложения
         QObject::connect(button, &QPushButton::clicked, QApplication::instance(), &QApplication::quit);
     }
-    
-private:    
-    Q_OBJECT
+
 };
 
 int main(int argc, char* argv[]) {
@@ -33,4 +34,5 @@ int main(int argc, char* argv[]) {
     return app.exec();
 }
 
+// нет заголовка поэтому пришлось вручную.
 #include "main.moc"

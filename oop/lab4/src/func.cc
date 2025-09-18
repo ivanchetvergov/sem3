@@ -5,8 +5,9 @@
 #include <string>
 #include <algorithm>
 
+
 bool Pred1_1(const Point& p) {
-    return (p.x >= -N && p.x <= M) && (p.y >= -N && p.y <= M);
+    return (p.x >= 7 && p.x <=7) && (p.y >= 7 && p.y <=7);
 }
 
 void to_lower_case(std::string& s) {
