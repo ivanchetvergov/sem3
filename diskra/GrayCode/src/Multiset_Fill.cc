@@ -7,8 +7,11 @@
 
 void Multiset::fillRandomly(int n) {
     if (n < 0) {
+        letUserUseOp_ = false;
         throw InvalidValueException("отрицательная разрядность недопустима.");
     }
+
+    letUserUseOp_ = true;
 
     elements_.clear();
     totalCardinality_ = 0;

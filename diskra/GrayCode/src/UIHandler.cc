@@ -1,5 +1,6 @@
 // UIHandler.cc
 #include "UIHandler.h"
+#include "MultisetArithmetic.h"
 #include "Multiset.h"
 #include "IO.h"
 #include "Exceptions.h"
@@ -18,6 +19,8 @@ void UIHandler::showMenu() {
     if (!universe_.isEmpty()) {
         cout << "2. заполнить множества A и B вручную\n";
         cout << "3. заполнить множества A и B автоматически\n";
+    }
+    if (universe_.letUserUseOp_){
         cout << "4. выполнить операции над множествами\n";
     }
     cout << "5. вывести множество\n";
@@ -39,21 +42,22 @@ void UIHandler::showOperationsMenu() {
     cout << "    1. объединение            (A | B)\n";
     cout << "    2. пересечение            (A & B)\n";
     cout << "    3. дополнение к A         (U \\ A)\n";
-    cout << "    4. логическая разность    (A \\ B)\n";
-    cout << "    5. симм. разность         (A ^ B)\n";
-    cout << "    6. сумма                  (A + B)\n";
-    cout << "    7. арифм. разность        (A - B)\n";
-    cout << "    8. произведение           (A * B)\n";
-    cout << "    9. деление                (A / B)\n";
-    cout << "    10. в главное меню\n";
+    cout << "    4. дополнение к B         (U \\ B)\n";
+    cout << "    5. разность               (A \\ B)\n";
+    cout << "    6. разность               (B \\ A)\n";
+    cout << "    7. симм. разность         (A ^ B)\n";
+    cout << "    8. сумма                  (A + B)\n";
+    cout << "    9. арифм. разность        (A - B)\n";
+    cout << "    10. арифм. разность       (B - A)\n";
+    cout << "    11. произведение          (A * B)\n";
+    cout << "    12. деление               (A / B)\n";
+    cout << "    13. деление               (B / A)\n";
+    cout << "    14. в главное меню\n";
     cout << "-------------------------------------\n";
 }
 
 void UIHandler::handleGenerateUniverse() {
     int n = readInteger("введите разрядность (n): ");
-    if (n < 0) {
-        throw InvalidValueException("отрицательная разрядность недопустима.");
-    }
     universe_.fillRandomly(n);
     cout << "универсум успешно сгенерирован.\n";
     universe_.print();
@@ -92,6 +96,7 @@ void UIHandler::handleOperationsMenu() {
     while (true) {
         try {
             showOperationsMenu();
+            MultisetArithmetic arithmeticHandler(universe_);
             int choice = readInteger("выберите операцию: ");
             Multiset result;
 
@@ -107,44 +112,61 @@ void UIHandler::handleOperationsMenu() {
                     result.print();
                     break;
                 case 3:
-                    if (universe_.isEmpty()) {
-                        throw InvalidOperationException("универсум пуст. дополнение невозможно.");
-                    }
                     result = universe_ - A_;
                     cout << "\n--- результат дополнения ---\n";
                     result.print();
                     break;
                 case 4:
+                    result = universe_ - B_;
+                    cout << "\n--- результат дополнения ---\n";
+                    result.print();
+                    break;
+                case 5:
                     result = A_ - B_;
                     cout << "\n--- результат разности ---\n";
                     result.print();
                     break;
-                case 5:
+                case 6:
+                    result = B_ - A_;
+                    cout << "\n--- результат разности ---\n";
+                    result.print();
+                    break;
+                case 7:
                     result = A_ ^ B_;
                     cout << "\n--- результат симметрической разности ---\n";
                     result.print();
                     break;
-                case 6:
-                    result = A_ + B_;
+                case 8:
+                    result = arithmeticHandler.sum(A_, B_);
                     cout << "\n--- результат арифметической суммы ---\n";
                     result.print();
                     break;
-                case 7: 
-                    result = A_.arithmeticDifference(B_);
-                    cout << "\n--- результат арифметической разности ---\n";
+                case 9: 
+                    result = arithmeticHandler.difference(A_, B_);
+                    cout << "\n--- результат арифметической разности (A - B) ---\n";
                     result.print();
                     break;
-                case 8:
-                    result = A_ * B_;
+                case 10: 
+                    result = arithmeticHandler.difference(B_, A_);
+                    cout << "\n--- результат арифметической разности (B - A) ---\n";
+                    result.print();
+                    break;
+                case 11:
+                    result = arithmeticHandler.product(A_, B_);
                     cout << "\n--- результат арифметического произведения ---\n";
                     result.print();
                     break;
-                case 9:
-                    result = A_ / B_;
-                    cout << "\n--- результат арифметического деления ---\n";
+                case 12:
+                    result = arithmeticHandler.division(A_, B_);
+                    cout << "\n--- результат арифметического деления (A / B) ---\n";
                     result.print();
                     break;
-                case 10:
+                case 13:
+                    result = arithmeticHandler.division(B_, A_);
+                    cout << "\n--- результат арифметического деления (B / A) ---\n";
+                    result.print();
+                    break;
+                case 14:
                     return;
                 default:
                     throw InvalidValueException("неверный выбор.");

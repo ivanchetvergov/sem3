@@ -6,6 +6,8 @@
 #include <iostream>
 #include <stdexcept>
 
+class MultisetArithmetic;
+
 class Multiset {
 public:
     Multiset() : totalCardinality_(0) {}
@@ -13,9 +15,8 @@ public:
     long long getCardinality() const { return totalCardinality_; }
     const std::map<std::string, int>& getElements() const { return elements_; }
 
-    Multiset operator+(const Multiset& other) const;
+
     Multiset operator-(const Multiset& other) const;
-    Multiset operator*(const Multiset& other) const;
     Multiset operator/(const Multiset& other) const;
     Multiset operator|(const Multiset& other) const; 
     Multiset operator&(const Multiset& other) const; 
@@ -29,10 +30,12 @@ public:
     void print() const;
 
     Multiset arithmeticDifference(const Multiset& other) const;
+    bool letUserUseOp_ = false;
 
 private:
+    friend class MultisetArithmetic;
     std::map<std::string, int> elements_;
-    unsigned long long totalCardinality_;
+    long long totalCardinality_;
 
     Multiset unionWith(const Multiset& other) const;
     Multiset intersectWith(const Multiset& other) const;

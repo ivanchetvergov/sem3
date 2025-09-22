@@ -3,22 +3,39 @@
 #include "Exceptions.h"
 #include <algorithm>
 
-// (базовый метод) A or B 
+// (базовый метод) A or B (max)
 Multiset Multiset::unionWith(const Multiset& other) const {
-    Multiset result = *this;
-    for (const auto& pair : other.elements_) {
-        const std::string& code = pair.first;
-        const int other_cardinality = pair.second;
-        result.elements_[code] += other_cardinality;
+    Multiset result;
+
+    // собираем объединение всех ключей
+    for (const auto& [code, a_card] : this->elements_) {
+        int b_card = 0;
+        if (other.elements_.count(code)) {
+            b_card = other.elements_.at(code);
+        }
+        int res_card = std::max(a_card, b_card);
+        if (res_card > 0) {
+            result.elements_[code] = res_card;
+            result.totalCardinality_ += res_card;
+        }
     }
-    result.totalCardinality_ = 0;
-    for (const auto& pair : result.elements_) {
-        result.totalCardinality_ += pair.second;
+
+    // добавляем ключи, которых не было в this
+    for (const auto& [code, b_card] : other.elements_) {
+        if (!this->elements_.count(code)) {
+            if (b_card > 0) {
+                result.elements_[code] = b_card;
+                result.totalCardinality_ += b_card;
+            }
+        }
     }
+
     return result;
 }
 
+
 // (базовый метод) A \ B (Правильная разность мультимножеств)
+// (A∖B)(x)=max(0,A(x)−B(x)) в мультим-ах
 // TODO: A and not B
 Multiset Multiset::difference(const Multiset& other) const {
     Multiset result = *this; // cоздаем копию A
@@ -78,75 +95,5 @@ Multiset Multiset::operator^(const Multiset& other) const {
     return this->symmetricDifference(other);
 }
 
-// --- не множеств. оп-ии ---
 
-Multiset Multiset::operator+(const Multiset& other) const {
-    Multiset result = *this;
-    for (const auto& pair : other.elements_) {
-        const std::string& code = pair.first;
-        const int other_cardinality = pair.second;
-        result.elements_[code] += other_cardinality;
-    }
-    result.totalCardinality_ = 0;
-    for (const auto& pair : result.elements_) {
-        result.totalCardinality_ += pair.second;
-    }
-    return result;
-}
 
-Multiset Multiset::operator*(const Multiset& other) const {
-    Multiset result;
-    for (const auto& pair_a : this->elements_) {
-        const std::string& code_a = pair_a.first;
-        const int a_cardinality = pair_a.second;
-        if (other.elements_.count(code_a)) {
-            const int b_cardinality = other.elements_.at(code_a);
-            result.elements_[code_a] = a_cardinality * b_cardinality;
-        }
-    }
-    result.totalCardinality_ = 0;
-    for (const auto& pair : result.elements_) {
-        result.totalCardinality_ += pair.second;
-    }
-    return result;
-}
-
-Multiset Multiset::operator/(const Multiset& other) const {
-    Multiset result;
-    for (const auto& pair_a : this->elements_) {
-        const std::string& code_a = pair_a.first;
-        const int a_cardinality = pair_a.second;
-        if (other.elements_.count(code_a)) {
-            const int b_cardinality = other.elements_.at(code_a);
-            if (b_cardinality == 0) {
-                throw InvalidOperationException("деление на 0 для элемента " + code_a);
-            }
-            result.elements_[code_a] = a_cardinality / b_cardinality;
-        }
-    }
-    result.totalCardinality_ = 0;
-    for (const auto& pair : result.elements_) {
-        result.totalCardinality_ += pair.second;
-    }
-    return result;
-}
-
-Multiset Multiset::arithmeticDifference(const Multiset& other) const {
-    Multiset result = *this; // создаем копию A
-    
-    // итерируемся по элементам B
-    for (const auto& pair : other.elements_) {
-        const std::string& code = pair.first;
-        const int other_cardinality = pair.second;
-        
-        // вычитаем кратность B из кратности A
-        result.elements_[code] -= other_cardinality;
-    }
-
-    // пересчитываем общую мощность
-    result.totalCardinality_ = 0;
-    for (const auto& pair : result.elements_) {
-        result.totalCardinality_ += pair.second;
-    }
-    return result;
-}
