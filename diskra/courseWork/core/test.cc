@@ -59,7 +59,10 @@ void run_all_tests(const FiniteField& calculator) {
 
     run_test("Division by zero", [&]() {
         try {
-            calculator.divide(calculator.getRules().getOneElement(), calculator.getRules().getZeroElement());
+            calculator.divide(
+                                calculator.getRules().getOneElement(), 
+                                calculator.getRules().getZeroElement()
+                            );
             throw std::runtime_error("Expected an exception for division by zero, but none was thrown.");
         } catch (const std::runtime_error& e) {
             if (std::string(e.what()).find("Division by zero") == std::string::npos) {
@@ -78,7 +81,7 @@ int main(int argc, char* argv[]) {
     std::string variant_name = argv[1];
     
     try {
-        FiniteFieldRules rules("../core/core_config.yaml", variant_name);
+        FiniteFieldRules rules("../config/core.yaml", variant_name);
         FiniteField calculator(rules);
 
         std::cout << "--- Starting tests for variant: " << variant_name << " ---" << std::endl;
