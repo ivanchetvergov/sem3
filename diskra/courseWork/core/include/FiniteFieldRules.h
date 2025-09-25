@@ -15,14 +15,16 @@ public:
     int getSize() const;
     char getZeroElement() const;
     char getOneElement() const;
-    std::vector<char> getNextChar(char current_char) const;
-    int getCharValue(char character) const;
+
     char getValueChar(int value) const;
+    int getCharValue(char value) const;
+    
+    const std::vector<char>& getNextChar(char current_char) const; 
 
 private:
     int size_; 
     char zero_element_; 
-    char one_element_
+    char one_element_;
 
     std::map<char, int> char_to_val_;
     std::map<int, char> val_to_char_;

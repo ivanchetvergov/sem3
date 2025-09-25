@@ -19,6 +19,8 @@ public:
     char find_additive_inverse(char val) const;
     char find_multiplicative_inverse(char val) const;
 
+    const FiniteFieldRules& getRules() const;
+
 private:
     const FiniteFieldRules& rules_;
     
