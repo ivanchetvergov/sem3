@@ -1,0 +1,22 @@
+# config.yaml
+
+variants:
+  Z8:
+    # Конфигурация для первого варианта Z8.
+    variant_1:
+      size: 8
+
+      rule_plus_one: [b, c, e, g, d, h, f, a]
+
+      zero_element: a
+
+      one_element: b
+    X1:
+      size: 8
+      rule_plus_one:
+        b: h
+        c: g
+        d: e
+        f: ['c', 'e'] # Для f+1=c или e
+        g: a
+        h: ['d', 'f'] # Для h+1=d или f
