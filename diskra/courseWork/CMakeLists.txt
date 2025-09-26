@@ -3,11 +3,13 @@ project(FiniteCalculator VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_BUILD_TYPE Debug)
 
 include_directories(core/include)
 
 find_package(pybind11 REQUIRED)
 find_package(yaml-cpp REQUIRED)
+find_package(GTest REQUIRED) 
 
 # модуль для python
 pybind11_add_module(finite_field_module
@@ -18,13 +20,28 @@ pybind11_add_module(finite_field_module
 target_link_libraries(finite_field_module PRIVATE yaml-cpp::yaml-cpp)
 
 
-add_executable(test_runner
+# --- GTest / CTest ИНТЕГРАЦИЯ ---
+
+# 1. создаем исполняемый файл для тестов
+add_executable(
+    finite_field_tests
     core/src/FiniteField.cc
     core/src/FiniteFieldRules.cc
-    core/test.cc
+    tests/gtest.cc
 )
-target_link_libraries(test_runner PRIVATE yaml-cpp::yaml-cpp)
 
+# 2. линкуем с библиотеками GTest и зависимостями
+target_link_libraries(
+    finite_field_tests
+    PRIVATE 
+    yaml-cpp::yaml-cpp
+    GTest::gtest_main 
+)
+
+# 3. регистрируем тесты в CTest
+enable_testing()
+
+gtest_discover_tests(finite_field_tests)
 enable_testing()
 add_test(NAME Test_Z8_Variant_1 COMMAND test_runner variant_1)
 add_test(NAME Test_Z8_Variant_2 COMMAND test_runner variant_2)
