@@ -32,9 +32,13 @@ void FiniteFieldRules::init(const YAML::Node& variant_node) {
     if (!rpo || !rpo.IsSequence())
         throw std::runtime_error("rule_plus_one must be a sequence");
 
-    std::vector<char> seq = rpo.as<std::vector<char>>();
-    if ((int)seq.size() != size_)
-        throw std::runtime_error("rule_plus_one size mismatch");
+    std::vector<std::string> seq_strs = rpo.as<std::vector<std::string>>();
+    std::vector<char> seq;
+    seq.reserve(seq_strs.size());
+    for (auto &s : seq_strs) {
+        if (s.empty()) throw std::runtime_error("empty string in rule_plus_one");
+        seq.push_back(s[0]);
+    }
 
     // строим отображение "следующий элемент"
     std::map<char,char> next;
@@ -72,3 +76,4 @@ int FiniteFieldRules::getCharValue(char c) const {
         throw std::runtime_error("invalid character: " + std::string(1, c));
     return it->second;
 }
+

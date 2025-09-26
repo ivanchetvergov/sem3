@@ -11,6 +11,7 @@ public:
     char divide(char a, char b) const;
 
     const FiniteFieldRules& getRules() const { return rules_; }
+    char findMultiplicativeInverse(char element) const;
 
 private:
     const FiniteFieldRules& rules_;
