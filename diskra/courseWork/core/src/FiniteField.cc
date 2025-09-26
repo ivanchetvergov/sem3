@@ -1,69 +1,41 @@
 #include "FiniteField.h"
 #include <stdexcept>
 
-FiniteField::FiniteField(const FiniteFieldRules& rules) : rules_(rules) {
-    precomputeInverses();
-}
-
 char FiniteField::add(char a, char b) const {
-    int val_a = rules_.getCharValue(a);
-    int val_b = rules_.getCharValue(b);
-    int sum_val = (val_a + val_b) % rules_.getSize();
-    return rules_.getValueChar(sum_val);
+    return rules_.getValueChar(
+        (rules_.getCharValue(a) + rules_.getCharValue(b)) % rules_.getSize()
+    );
 }
 
 char FiniteField::subtract(char a, char b) const {
-    return add(a, findAdditiveInverse(b));
+    int n = rules_.getSize();
+    return rules_.getValueChar(
+        (rules_.getCharValue(a) - rules_.getCharValue(b) + n) % n
+    );
 }
 
 char FiniteField::multiply(char a, char b) const {
-    int val_a = rules_.getCharValue(a);
-    int val_b = rules_.getCharValue(b);
-    int prod_val = (val_a * val_b) % rules_.getSize();
-    return rules_.getValueChar(prod_val);
+    return rules_.getValueChar(
+        (rules_.getCharValue(a) * rules_.getCharValue(b)) % rules_.getSize()
+    );
 }
 
 char FiniteField::divide(char a, char b) const {
-    if (b == rules_.getZeroElement())
-        throw std::runtime_error("division by zero element");
-    return multiply(a, findMultiplicativeInverse(b));
-}
+    int n = rules_.getSize();
+    int vb = rules_.getCharValue(b);
+    if (vb == 0)
+        throw std::runtime_error("division by zero");
 
-char FiniteField::findAdditiveInverse(char val) const {
-    auto it = additive_inverses_.find(val);
-    if (it == additive_inverses_.end())
-        throw std::runtime_error("additive inverse not found");
-    return it->second;
-}
-
-char FiniteField::findMultiplicativeInverse(char val) const {
-    auto it = multiplicative_inverses_.find(val);
-    if (it == multiplicative_inverses_.end())
-        throw std::runtime_error("multiplicative inverse not found");
-    return it->second;
-}
-
-void FiniteField::precomputeInverses() {
-    int size = rules_.getSize();
-    char zero = rules_.getZeroElement();
-    char one = rules_.getOneElement();
-
-    for (int i = 0; i < size; ++i) {
-        char c = rules_.getValueChar(i);
-        additive_inverses_[c] = rules_.getValueChar((size - i) % size);
-        if (c != zero) {
-            // простой перебор для мультипликативного обратного
-            for (int j = 0; j < size; ++j) {
-                char candidate = rules_.getValueChar(j);
-                if (candidate != zero && multiply(c, candidate) == one) {
-                    multiplicative_inverses_[c] = candidate;
-                    break;
-                }
-            }
+    // ищем мультипликативный обратный
+    int inv = -1;
+    for (int i = 0; i < n; ++i) {
+        if ((vb * i) % n == 1) {
+            inv = i;
+            break;
         }
     }
-}
+    if (inv == -1)
+        throw std::runtime_error("no multiplicative inverse for: " + std::string(1, b));
 
-const FiniteFieldRules& FiniteField::getRules() const{
-    return rules_;
+    return rules_.getValueChar((rules_.getCharValue(a) * inv) % n);
 }

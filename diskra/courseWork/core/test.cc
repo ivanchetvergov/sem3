@@ -65,7 +65,7 @@ void run_all_tests(const FiniteField& calculator) {
                             );
             throw std::runtime_error("Expected an exception for division by zero, but none was thrown.");
         } catch (const std::runtime_error& e) {
-            if (std::string(e.what()).find("Division by zero") == std::string::npos) {
+            if (std::string(e.what()).find("division by zero") == std::string::npos) {
                 throw;
             }
         }

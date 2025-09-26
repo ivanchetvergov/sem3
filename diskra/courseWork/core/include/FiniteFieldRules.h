@@ -1,7 +1,4 @@
-// core/include/FiniteFieldRules.h
 #pragma once
-
-#include <iostream>
 #include <string>
 #include <vector>
 #include <map>
@@ -11,21 +8,19 @@ class FiniteFieldRules {
 public:
     FiniteFieldRules(const std::string& config_file, const std::string& variant_name);
 
-    int getSize() const;
+    int  getSize() const { return size_; }
+    char getZeroElement() const { return zero_; }
+    char getOneElement() const { return one_; }
 
-    char getZeroElement() const;
-    char getOneElement() const;
-    
-    char getValueChar(int value) const;
-    int getCharValue(char value) const;
+    char getValueChar(int v) const { return values_.at(v % size_); }
+    int  getCharValue(char c) const;
 
 private:
-    void initialize_rules(const YAML::Node& variant_node);
+    void init(const YAML::Node& variant_node);
 
-    int size_;
-    char zero_element_;
-    char one_element_;
-    std::vector<char> values_;
-    std::map<char, int> char_to_val_;
-    std::map<int, char> val_to_char_;
+    int size_{};
+    char zero_{};
+    char one_{};
+    std::vector<char> values_;              // цикл элементов от zero_
+    std::map<char,int> char_to_val_;        // символ → индекс
 };
