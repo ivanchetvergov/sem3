@@ -4,7 +4,6 @@
 #include <QWidget>
 #include <QVector>
 
-// declarations to avoid including full header files
 class QLabel;
 class QSlider;
 class QScrollBar;
@@ -16,8 +15,9 @@ class MyWidgetCollection : public QWidget {
 public:
     MyWidgetCollection(QWidget* parent = nullptr);
     void addWidget(const QString& type);
+    void rmLastWidget();
 
-public slots: // a special access specifier for slots
+public slots: 
     void connectAllWidgets();
 
 private:
@@ -26,4 +26,4 @@ private:
     void debugConnectionInfo();
 
     QVector<QWidget*> widgets_;
-};
+};     

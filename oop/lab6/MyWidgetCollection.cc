@@ -20,18 +20,24 @@ void MyWidgetCollection::setupUi() {
     auto addSpinBoxBtn = new QPushButton("add QSpinBox");
     auto addLabelBtn = new QPushButton("add QLabel");
     auto connectBtn = new QPushButton("connect all widgets");
+    auto rmBtn =  new QPushButton("rm last");
+
 
     layout->addWidget(addSliderBtn);
     layout->addWidget(addScrollBarBtn);
     layout->addWidget(addSpinBoxBtn);
     layout->addWidget(addLabelBtn);
     layout->addWidget(connectBtn);
+    layout->addWidget(rmBtn);
+
     // связали сигналы и слоты
-    // линковка путем вызова лямбды ф-ии
+    // линковка путем указателей на ф-ии и вызова лямбды ф-ии
     connect(addSliderBtn, &QPushButton::clicked, this, [this]() { addWidget("QSlider"); });
     connect(addScrollBarBtn, &QPushButton::clicked, this, [this]() { addWidget("QScrollBar"); });
     connect(addSpinBoxBtn, &QPushButton::clicked, this, [this]() { addWidget("QSpinBox"); });
     connect(addLabelBtn, &QPushButton::clicked, this, [this]() { addWidget("QLabel"); });
+    connect(rmBtn, &QPushButton::clicked, this, [this]() { rmLastWidget(); });
+
     // линковка сигнала со слотом 
     connect(connectBtn, &QPushButton::clicked, this, &MyWidgetCollection::connectAllWidgets);
 
@@ -46,6 +52,7 @@ void MyWidgetCollection::addWidget(const QString& type) {
 
     // this  делает наш класс родителем для каждого виджета,
     // что обеспечивает автоматическое управление памятью.
+    // bool QObject::setProperty(const char* name, const QVariant& value);
     if (type == "QLabel") {
         newWidget = new QLabel("Label: 0", this);
     } else if (type == "QSlider") {
@@ -69,17 +76,27 @@ void MyWidgetCollection::addWidget(const QString& type) {
     }
 }
 
+void MyWidgetCollection::rmLastWidget(){
+    // QWidget* lastWidget = widgets_[widgets_.size() - 1];
+    QWidget* lastWidget = widgets_.last();
+
+    delete lastWidget;
+}
+
 void MyWidgetCollection::connectWidgets(QWidget* w1, QWidget* w2) {
     // достаем имя класса обьектов
     QString class1 = w1->metaObject()->className();
     QString class2 = w2->metaObject()->className();
 
     // cоединяем w1 (источник) с w2 (приемник)
-    if (class1 == "QSlider" || 
+    if (class1 == "QSlider"    || 
         class1 == "QScrollBar" || 
         class1 == "QSpinBox") {
         
         // флаг Qt::UniqueConnection предотвращает дублирование
+        // QObject::connect(sender, SIGNAL(signalName()), receiver, SLOT(slotName()));
+        // неизвестны типы данных поэтому остается коннект напрямую
+        // ч-з макросы SIGNAL и SLOT (создают строки "ключи")
         if (class2 == "QLabel") {
             connect(w1, SIGNAL(valueChanged(int)), w2, 
                 SLOT(setNum(int)), Qt::UniqueConnection);
@@ -115,8 +132,8 @@ void MyWidgetCollection::debugConnectionInfo() {
     int totalConnections = 0;
     for (QWidget* w : widgets_) {
         qDebug() << "Widget" << w->metaObject()->className() << "at" << w << "has connections.";
-        QObject::dumpObjectInfo();
-    }
+    }        
+    // QObject::dumpObjectInfo();
     qDebug() << "-----------------------------";
 }
 
