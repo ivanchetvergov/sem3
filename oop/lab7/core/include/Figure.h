@@ -6,8 +6,8 @@
 #include <QColor>
 
 class Figure {
-    Q_GADGET
-public:
+    Q_GADGET // Отсутствует поддержка сигналов и слотов
+public:  
     virtual ~Figure() = default;
 
     virtual void draw(QPainter* painter) = 0;

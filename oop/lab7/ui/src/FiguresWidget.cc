@@ -11,14 +11,11 @@ FiguresWidget::~FiguresWidget() {
     clearFigures();
 }
 
-//--- Управление коллекцией ---
-
 void FiguresWidget::addFigure(Figure* figure) {
     figures_.append(figure);
     update();
 }
 
-// Новый метод для удаления последнего элемента
 void FiguresWidget::removeFigure() {
     if (!figures_.isEmpty()) {
         Figure* lastFigure = figures_.last();
@@ -26,8 +23,8 @@ void FiguresWidget::removeFigure() {
         if (lastFigure == activeFigure_) {
             activeFigure_ = nullptr;
         }
-        figures_.removeLast(); // Удаляем последний элемент из вектора
-        delete lastFigure; // Освобождаем память
+        figures_.removeLast();      // Удаляем последний элемент из вектора
+        delete lastFigure;          // Освобождаем память
         update();
     }
 }
@@ -59,7 +56,8 @@ void FiguresWidget::mousePressEvent(QMouseEvent* event) {
     }
 
     // Ищем фигуру в обратном порядке для выбора верхнего элемента
-    for (int i = figures_.size() - 1; i >= 0; --i) {
+    int i = figures_.size() - 1;
+    for (i; i >= 0; --i) {
         if (figures_[i]->contains(event->pos())) {
             activeFigure_ = figures_[i];
             activeFigure_->isActive_ = true;
