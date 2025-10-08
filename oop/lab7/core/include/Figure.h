@@ -5,9 +5,11 @@
 #include <QPainter>
 #include <QColor>
 
+// Figure - class Value Type
 class Figure {
-    Q_GADGET // Отсутствует поддержка сигналов и слотов
+    Q_GADGET // Отсутствует поддержка сигналов и слотов, и не требует наследования
 public:  
+    // API для наследников
     virtual ~Figure() = default;
 
     virtual void draw(QPainter* painter) = 0;

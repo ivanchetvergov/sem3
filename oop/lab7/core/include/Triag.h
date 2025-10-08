@@ -14,5 +14,6 @@ public:
     void move(const QPointF& delta) override;
 
 private:
-    QPolygonF polygon;
+    // QPolygonF — QVector<QPointF>
+    QPolygonF polygon_;
 };

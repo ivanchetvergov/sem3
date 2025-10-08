@@ -14,6 +14,7 @@ public:
     bool contains(const QPointF& point) const override;
 
 private:
+    // qreal - double|float
     qreal width_;
     qreal height_;
 };
