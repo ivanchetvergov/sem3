@@ -1,6 +1,5 @@
 // ContactTableModel.h
 #pragma once
-
 #include "Contact.h"
 #include "ContactManager.h"
 
@@ -8,16 +7,19 @@
 #include <QList>
 #include <QVariant>
 
+//* класс-адаптер (mapper) ContactManager -> QTableView
 class ContactTableModel : public QAbstractTableModel {
     Q_OBJECT
 
 public:
+    // констрктор принимает указатель на contactManager (источник данных) 
     explicit ContactTableModel(ContactManager* contactManager, QObject* parent = nullptr);
 
-    // обязательные методы для QAbstractTableModel
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    //* --- обязательные методы для QAbstractTableModel ---
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override; // возвр кол-во строк (записей  Contact)
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override; // возвр кол-во столб (полей Contact)
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override; // предоставляет данные для ячейки (index) в заданной роли (role).
+    
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
@@ -32,5 +34,5 @@ public slots:
     void resetTable();
 
 private:
-    ContactManager* contactManager_;
+ContactManager* contactManager_;
 };

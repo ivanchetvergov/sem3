@@ -5,7 +5,10 @@
 #include <QDate>
 #include <QMap>
 
+//* служит ORM моделью QTable
 struct Contact {
+    Q_GADGET
+
     QString firstName_;
     QString lastName_;
     QString middleName_;
