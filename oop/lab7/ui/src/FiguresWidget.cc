@@ -3,8 +3,8 @@
 #include <QPainter>
 
 FiguresWidget::FiguresWidget(QWidget* parent) : QWidget(parent) {
-    setFocusPolicy(Qt::StrongFocus);
-    setMouseTracking(true);
+    setFocusPolicy(Qt::StrongFocus);    // уровень фокусирования (высокий)
+    setMouseTracking(true);             // отслеживание мыши
 }
 
 FiguresWidget::~FiguresWidget() {
@@ -13,18 +13,18 @@ FiguresWidget::~FiguresWidget() {
 
 void FiguresWidget::addFigure(Figure* figure) {
     figures_.append(figure);
-    update();
+    update(); // кидает в eventLoop запрос на перерисовку виджета
 }
 
 void FiguresWidget::removeFigure() {
     if (!figures_.isEmpty()) {
         Figure* lastFigure = figures_.last();
-        // Если последний элемент активен, сбрасываем activeFigure_
+        // если последний элемент активен, сбрасываем activeFigure_
         if (lastFigure == activeFigure_) {
             activeFigure_ = nullptr;
         }
-        figures_.removeLast();      // Удаляем последний элемент из вектора
-        delete lastFigure;          // Освобождаем память
+        figures_.removeLast();      // удаляем последний элемент из вектора
+        delete lastFigure;          // освобождаем память
         update();
     }
 }
@@ -36,59 +36,61 @@ void FiguresWidget::clearFigures() {
     update();
 }
 
-//--- Обработка событий ---
+//--- обработка событий ---
 
 void FiguresWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    // рисуем все фигуры в порядке их добавления
+    //* рисуем все фигуры в порядке их добавления ->
     for (Figure* figure : figures_) {
         figure->draw(&painter);
     }
 }
 
 void FiguresWidget::mousePressEvent(QMouseEvent* event) {
-    // Деактивируем предыдущую фигуру, если она есть
+    // деактивируем предыдущую фигуру, если она есть
     if (activeFigure_) {
         activeFigure_->isActive_ = false;
         activeFigure_ = nullptr;
     }
 
-    // Ищем фигуру в обратном порядке для выбора верхнего элемента
-    int i = figures_.size() - 1;
-    for (i; i >= 0; --i) {
+    //* ищем фигуру в обратном порядке для выбора верхнего элемента <-
+    for (int i = figures_.size() - 1; i >= 0; --i) {
+        //* если коорд мыши внутри фигуры
         if (figures_[i]->contains(event->pos())) {
             activeFigure_ = figures_[i];
             activeFigure_->isActive_ = true;
             
-            // Удаляем фигуру из текущей позиции
+            // удаляем фигуру из текущей позиции
             figures_.removeAt(i);
             
-            // Добавляем её в конец вектора, чтобы она рисовалась поверх остальных
+            // добавляем её в конец вектора, чтобы она рисовалась поверх остальных
             figures_.append(activeFigure_);
             
-            break; // Останавливаем поиск
+            break; // останавливаем поиск
         }
     }
-    
+    // обновляем позицию мыши
     lastMousePos_ = event->pos();
     update();
 }
 
 void FiguresWidget::mouseMoveEvent(QMouseEvent* event) {
+    //* если есть активная фигура
     if (activeFigure_) {
-        QPointF delta = event->pos() - lastMousePos_;
-        activeFigure_->move(delta);
-        lastMousePos_ = event->pos();
+        QPointF delta = event->pos() - lastMousePos_;    // высчитываем дельту
+        activeFigure_->move(delta);                      // двигаем фигуры на нее
+        lastMousePos_ = event->pos();                    // обновляем поз мыши
         update();
     }
 }
 
 void FiguresWidget::mouseReleaseEvent(QMouseEvent* event) {
+    //* если есть активная фигура
     if (activeFigure_) {
-        activeFigure_->isActive_ = false;
-        activeFigure_ = nullptr;
-        update();
+        activeFigure_->isActive_ = false;   // деактивация фигуры
+        activeFigure_ = nullptr;            // удаление указателя на нее
+        update();                           // отрисовка
     }
 }

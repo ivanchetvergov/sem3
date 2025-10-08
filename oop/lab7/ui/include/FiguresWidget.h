@@ -22,6 +22,7 @@ public:
     void removeFigure();
     
 protected:
+    //* FiguresWidget получатель событий, получая их вызывает override методы
     void paintEvent(QPaintEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
