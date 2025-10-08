@@ -23,10 +23,10 @@ public:
     
 protected:
     //* FiguresWidget получатель событий, получая их вызывает override методы
-    void paintEvent(QPaintEvent* event) override;
-    void mousePressEvent(QMouseEvent* event) override;
-    void mouseMoveEvent(QMouseEvent* event) override;
-    void mouseReleaseEvent(QMouseEvent* event) override;
+    void paintEvent(QPaintEvent* event) override;         // отрисовка
+    void mousePressEvent(QMouseEvent* event) override;    // нажатие кнопки мыши
+    void mouseMoveEvent(QMouseEvent* event) override;     // движение мыши с нажатой кнопкой
+    void mouseReleaseEvent(QMouseEvent* event) override;  // отжатие) кнопки мышки (release)
 
 private:
     QVector<Figure*> figures_;

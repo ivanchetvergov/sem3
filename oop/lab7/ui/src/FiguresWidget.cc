@@ -17,8 +17,10 @@ void FiguresWidget::addFigure(Figure* figure) {
 }
 
 void FiguresWidget::removeFigure() {
+    //* если есть фигуры
     if (!figures_.isEmpty()) {
-        Figure* lastFigure = figures_.last();
+        //* последняя добавленная или же активная фигруа
+        Figure* lastFigure = figures_.last(); 
         // если последний элемент активен, сбрасываем activeFigure_
         if (lastFigure == activeFigure_) {
             activeFigure_ = nullptr;
@@ -49,7 +51,7 @@ void FiguresWidget::paintEvent(QPaintEvent* event) {
 }
 
 void FiguresWidget::mousePressEvent(QMouseEvent* event) {
-    // деактивируем предыдущую фигуру, если она есть
+    //* деактивируем предыдущую фигуру, если она есть
     if (activeFigure_) {
         activeFigure_->isActive_ = false;
         activeFigure_ = nullptr;
