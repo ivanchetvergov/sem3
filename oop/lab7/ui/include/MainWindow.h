@@ -19,10 +19,10 @@ private slots:
     void on_remove_button_clicked();
 
 private:
-    FiguresWidget* figuresWidget_;
-    QComboBox* figureTypeComboBox_;
-    QPushButton* addButton_;
-    QPushButton* removeButton_;
+    FiguresWidget* figuresWidget_;      // widget для работы с фигурами
+    QComboBox* figureTypeComboBox_;     // выпадающий список
+    QPushButton* addButton_;            // кнопка add
+    QPushButton* removeButton_;         // кнопка rm
     
     void setupUi();
 };
