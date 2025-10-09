@@ -13,7 +13,11 @@ FiguresWidget::~FiguresWidget() {
 
 void FiguresWidget::addFigure(Figure* figure) {
     figures_.append(figure);
-    update(); // кидает в eventLoop запрос на перерисовку виджета
+    /*
+    * update - асинхронный
+    кидает запрос на перерисовку в очередь( EventLoop)
+    */
+    update(); 
 }
 
 void FiguresWidget::removeFigure() {
@@ -42,6 +46,7 @@ void FiguresWidget::clearFigures() {
 
 void FiguresWidget::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
+    //* устанавливаем сглаживание контура
     painter.setRenderHint(QPainter::Antialiasing);
 
     //* рисуем все фигуры в порядке их добавления ->
@@ -75,7 +80,7 @@ void FiguresWidget::mousePressEvent(QMouseEvent* event) {
     }
     // обновляем позицию мыши
     lastMousePos_ = event->pos();
-    update();
+    update(); // отрисовка идет -> по коллекции
 }
 
 void FiguresWidget::mouseMoveEvent(QMouseEvent* event) {

@@ -90,6 +90,7 @@ void MainWindow::on_add_button_clicked() {
     }
 }
 
+//* slot для кнопки rm
 void MainWindow::on_remove_button_clicked() {
     // передаем отдельному виджету
     figuresWidget_->removeFigure();

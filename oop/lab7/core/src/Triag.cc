@@ -29,6 +29,7 @@ void Triag::draw(QPainter* painter) {
 
 bool Triag::contains(const QPointF& point) const {
     return polygon_.containsPoint(point, Qt::OddEvenFill);
+    // OddEvenFill это правило заливки для проверки точки внутри н-угольника
 }
 
 void Triag::move(const QPointF& delta){

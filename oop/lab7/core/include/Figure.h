@@ -7,7 +7,7 @@
 
 // Figure - class Value Type
 class Figure {
-    Q_GADGET // Отсутствует поддержка сигналов и слотов, и не требует наследования
+    Q_GADGET // отсутствует поддержка сигналов и слотов, и не требует наследования
 public:  
     // API для наследников
     virtual ~Figure() = default;
