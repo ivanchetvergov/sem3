@@ -8,7 +8,7 @@
 //* служит ORM моделью QTable
 struct Contact {
     Q_GADGET
-
+public:
     QString firstName_;
     QString lastName_;
     QString middleName_;
@@ -16,4 +16,5 @@ struct Contact {
     QDate birthDate_;
     QString email_;
     QMap<QString, QString> phoneNumbers_;
+    QUuid id_ = QUuid::createUuid();
 };
