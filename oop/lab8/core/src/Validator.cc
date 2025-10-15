@@ -5,20 +5,25 @@
 bool Validator::isValidName(const QString& name) {
     QString trimmedName = name.trimmed(); // убрали пробелы
     
+    // проверка на пустой ввод
     if (trimmedName.isEmpty()) return false;
     
-    if (trimmedName.startsWith('-') || trimmedName.endsWith('-')) return false;
+    // проверка на наличие дефиса с концов
+    if (trimmedName.startsWith('-') || trimmedName.endsWith('-')) return false; 
 
-    // ^[А-ЯЁA-Z] - начинается с заглавной буквы
-    // [А-ЯЁа-яёA-Za-z0-9 -]* - далее могут идти буквы, цифры, пробел или дефис (любое количество)
-    // [А-ЯЁа-яёA-Za-z0-9]$ - заканчивается на букву или цифру
-    QRegularExpression re("^[А-ЯЁA-Z][А-ЯЁа-яёA-Za-z -]*[А-ЯЁа-яёA-Za-z0-9]$");
+    //* регулярное выражениие:
+    // ^[А-ЯA-Z] - начинается с заглавной буквы
+    // [А-Яа-яA-Za-z-]* - далее могут идти буквы пробел или дефис (любое количество)
+    // [А-Яа-яA-Za-z0-9]$ - заканчивается на букву или цифру
+    QRegularExpression re("^[А-ЯA-Z][А-Яа-яA-Za-z -]*[А-Яа-яA-Za-z0-9]$");
+    // проверяем на мэтч и возращаем bool
     return re.match(trimmedName).hasMatch();
 }
 
 bool Validator::isValidPhoneNumber(const QString& number) {
     // ^(\\+)? - необязательный плюс в начале
     // [\\s\\d()-]+$ - одна или более цифр, пробелов, скобок или дефисов
+    // \\s пробел и тд. \\d цифра
     QRegularExpression re("^(\\+)?[\\s\\d()-]+$");
     return re.match(number).hasMatch();
 }
