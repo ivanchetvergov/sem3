@@ -12,56 +12,85 @@
 #include <QTableView>
 #include <QDataWidgetMapper>
 #include <QPushButton> 
+#include <QComboBox>
 
+// слот для кнопки "Добавить" / "Сохранить"
 void MainWindow::onAddButtonClicked() {
     Contact contact = getCurrentContactFromForm();
-    if (!validateContact(contact)) {
-        return;
-    }
 
+    if (!validateContact(contact)) {
+        return; // валидация не пройдена
+    }
+    
+    // кнопка используется для двух целей
     if (isInEditMode_) {
+        // * режим редактирования:
+        // --- 1 ручное обновление телефона в модели
+        QModelIndex proxyIndex = tableView_->currentIndex();
+        QModelIndex sourceIndex = proxyModel_->mapToSource(proxyIndex);
+        
+        QString selectedType = phoneTypeComboBox_->currentText();
+        QString newNumber = mainPhoneInput_->text().trimmed();
+
+        // получаем изменяемый контакт и обновляем телефон по выбранному типу
+        Contact& contactToEdit = contactManager_.getContactsMutable()[sourceIndex.row()];
+        contactToEdit.phoneNumbers_[selectedType] = newNumber;
+        
+        // 2 авт. обновление остальный полей
+        // используем маппер для записи данных из формы обратно в Модель
         if (mapper_->submit()) {
             QMessageBox::information(this, "Успех", "Данные успешно отредактированы.");
         } else {
+            // ошибка submit обычно означает проблему с типом данных
             QMessageBox::warning(this, "Ошибка", "Не удалось сохранить изменения.");
-            return; // Останавливаемся, если не удалось сохранить
+            return;
         }
     } else {
+        // * режим добавления:
+        // маппер не нужен. используем прямую вставку через модель
         tableModel_->addContact(contact);
         QMessageBox::information(this, "Успех", "Контакт успешно добавлен.");
     }
 
-    contactManager_.saveToFile("contacts.json");
-    setEditingMode(false);
+    // общие действия
+    contactManager_.saveToFile("contacts.json");    // сохраняем на диск
+    setEditingMode(false);                          // возвращаемся в режим просмотра
 }
 
+// слот для кнопки "Удалить"
 void MainWindow::onRemoveButtonClicked() {
-    int currentRow = tableView_->currentIndex().row();
-    if (currentRow >= 0) {
-        tableModel_->removeContact(proxyModel_->mapToSource(tableView_->currentIndex()).row());
-        contactManager_.saveToFile("contacts.json");
-    } else {
+    // получаем индекс выбранной строки
+    QModelIndex proxyIndex = tableView_->currentIndex();
+    if (!proxyIndex.isValid()) {
         QMessageBox::information(this, "Удаление", "Пожалуйста, выберите запись для удаления.");
+        return;
     }
+    
+    // преобразуем индекс из Proxy-модели в индекс исходной модели
+    int sourceRow = proxyModel_->mapToSource(proxyIndex).row();
+    
+    // удаляем из исходной модели
+    tableModel_->removeContact(sourceRow);
+    
+    contactManager_.saveToFile("contacts.json");
+    setEditingMode(false); 
 }
 
+// Слот для кнопки "Редактировать"
 void MainWindow::onEditButtonClicked() {
-    int currentRow = tableView_->currentIndex().row();
-    if (currentRow < 0) {
+    QModelIndex proxyIndex = tableView_->currentIndex();
+    if (!proxyIndex.isValid()) {
         QMessageBox::information(this, "Редактирование", "Пожалуйста, выберите запись для редактирования.");
         return;
     }
 
     setEditingMode(true);
-    // Заполняем поля, используя маппер с корректным индексом из прокси-модели
-    QModelIndex sourceIndex = proxyModel_->mapToSource(tableView_->currentIndex());
-    mapper_->setCurrentIndex(sourceIndex.row());
+    mapper_->setCurrentIndex(proxyIndex.row());
     
-    QMessageBox::information(this, "Редактирование", "Теперь вы можете редактировать данные.");
+    QMessageBox::information(this, "Редактирование", "Теперь вы можете редактировать данные. Нажмите 'Сохранить' для применения.");
 }
-
 void MainWindow::onCancelButtonClicked() {
-    mapper_->revert(); // Откатываем все изменения в полях, сделанные маппером
+    mapper_->revert(); // откатываем все изменения в полях, сделанные маппером
     setEditingMode(false);
 }
 
@@ -69,10 +98,48 @@ void MainWindow::onSearchTextChanged(const QString& text) {
     proxyModel_->setFilterRegularExpression(text);
 }
 
+// слот для обработки выбора строки в таблице
 void MainWindow::onSelectionChanged() {
-    bool rowIsSelected = (tableView_->currentIndex().row() >= 0);
+    QModelIndex proxyIndex = tableView_->currentIndex();
+    bool rowIsSelected = proxyIndex.isValid();
+    
     removeButton_->setEnabled(rowIsSelected);
     editButton_->setEnabled(rowIsSelected);
+    
+    if (rowIsSelected && !isInEditMode_) {
+        // синхронизируем маппер с текущей строкой
+        mapper_->setCurrentIndex(proxyIndex.row());
+        
+        // ручное управление телефоном 
+        QModelIndex sourceIndex = proxyModel_->mapToSource(proxyIndex);
+        const Contact& contact = tableModel_->getContact(sourceIndex.row());
+        
+        // берем ключ из ComboBox 
+        QString selectedType = phoneTypeComboBox_->currentText(); 
+        
+        // отображаем номер, соответствующий выбранному типу
+        QString phoneNumber = contact.phoneNumbers_.value(selectedType);
+        mainPhoneInput_->setText(phoneNumber);
+    } else if (!rowIsSelected && !isInEditMode_) {
+        clearInputFields();
+    }
+}
+
+void MainWindow::onPhoneTypeChanged(const QString& type) {
+    QModelIndex proxyIndex = tableView_->currentIndex();
+    if (!proxyIndex.isValid() || isInEditMode_) {
+        // если ничего не выбрано или мы в режиме редактирования/добавления, 
+        // просто очищаем поле, чтобы не было путаницы.
+        mainPhoneInput_->clear();
+        return;
+    }
+
+    // чтаем данные из модели для выбранной строки и нового типа телефона
+    QModelIndex sourceIndex = proxyModel_->mapToSource(proxyIndex);
+    const Contact& contact = tableModel_->getContact(sourceIndex.row());
+    
+    QString phoneNumber = contact.phoneNumbers_.value(type);
+    mainPhoneInput_->setText(phoneNumber);
 }
 
 void MainWindow::clearInputFields() {
@@ -82,18 +149,20 @@ void MainWindow::clearInputFields() {
     addressInput_->clear();
     birthDateInput_->setDate(QDate::currentDate());
     emailInput_->clear();
-    phoneInput_->clear();
+    mainPhoneInput_->clear();
 }
 
 Contact MainWindow::getCurrentContactFromForm() const {
     Contact contact;
+    QString phoneType = phoneTypeComboBox_->currentText();
+
     contact.firstName_ = firstNameInput_->text().trimmed();
     contact.lastName_ = lastNameInput_->text().trimmed();
     contact.middleName_ = middleNameInput_->text().trimmed();
     contact.adress_ = addressInput_->text().trimmed();
     contact.birthDate_ = birthDateInput_->date();
     contact.email_ = emailInput_->text().trimmed();
-    contact.phoneNumbers_["Рабочий"] = phoneInput_->text().trimmed();
+    contact.phoneNumbers_[phoneType] = mainPhoneInput_->text().trimmed();
     return contact;
 }
 
@@ -140,14 +209,27 @@ void MainWindow::onLoadButtonClicked() {
 }
 
 bool MainWindow::validateContact(const Contact& contact) {
-    if (!Validator::isValidName(contact.firstName_) ||
-        !Validator::isValidName(contact.lastName_) ||
-        (!contact.middleName_.isEmpty() && !Validator::isValidName(contact.middleName_)) ||
-        !Validator::isValidBirthDate(contact.birthDate_) ||
-        !Validator::isValidEmail(contact.email_) ||
-        !Validator::isValidPhoneNumber(contact.phoneNumbers_.value("Рабочий"))) {
-        QMessageBox::warning(this, "Ошибка валидации", "Проверьте введенные данные.");
-        return false;
+    bool valid = true;
+    QString errors;
+
+    if (!Validator::isValidName(contact.firstName_)) { errors += "Неверное Имя. "; valid = false; }
+    if (!Validator::isValidName(contact.lastName_)) { errors += "Неверная Фамилия. "; valid = false; }
+    if (!contact.middleName_.isEmpty() && !Validator::isValidName(contact.middleName_)) { 
+        errors += "Неверное Отчество. "; valid = false; 
     }
-    return true;
+    if (!Validator::isValidBirthDate(contact.birthDate_)) { errors += "Неверная Дата рождения. "; valid = false; }
+    if (!Validator::isValidEmail(contact.email_)) { errors += "Неверный Email. "; valid = false; }
+    
+    for (const QString& number : contact.phoneNumbers_.values()) {
+        if (!Validator::isValidPhoneNumber(number) && !number.isEmpty()) { 
+            errors += "Неверный Телефон. "; 
+            valid = false;
+            break;
+        }
+    }
+
+    if (!valid) {
+        QMessageBox::warning(this, "Ошибка валидации", "Пожалуйста, исправьте:\n" + errors);
+    }
+    return valid;
 }

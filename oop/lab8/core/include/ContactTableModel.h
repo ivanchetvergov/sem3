@@ -49,4 +49,6 @@ public slots:
 private:
     // указатель на источник данных
     ContactManager* contactManager_;
+    // статическая константа
+    static constexpr int ContactIdRole = Qt::UserRole + 1; 
 };

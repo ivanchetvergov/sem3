@@ -4,6 +4,7 @@
 #include <QString>
 #include <QDate>
 #include <QMap>
+#include <QUuid>
 
 //* служит ORM моделью QTable
 struct Contact {

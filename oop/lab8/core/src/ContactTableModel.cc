@@ -35,10 +35,14 @@ QVariant ContactTableModel::data(const QModelIndex &index, int role) const {
             case 3: return contact.adress_;
             case 4: return contact.birthDate_;
             case 5: return contact.email_;
-            case 6: return contact.phoneNumbers_.value("Рабочий");
-            case 7: return contact.id_;
+            case 6: return contact.phoneNumbers_.values().join(", "); 
         }
     }
+    // пользовательская роль ContactIdRole (256: int)
+    if (role == ContactIdRole) {
+    return contact.id_; // возвращаем уникальный ID
+    }
+
     return QVariant();
 }
 
