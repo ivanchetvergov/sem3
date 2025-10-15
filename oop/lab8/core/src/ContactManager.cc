@@ -30,10 +30,11 @@ bool ContactManager::saveToFile(const QString& filePath) const {
     // формируем JSON
     for (const auto& contact : m_contacts) {
         QJsonObject contactObject;
+        // записываем поля в json
         contactObject["firstName"] = contact.firstName_;
         contactObject["lastName"] = contact.lastName_;
         contactObject["middleName"] = contact.middleName_;
-        contactObject["address"] = contact.adress_; // <-- Исправлено
+        contactObject["address"] = contact.adress_; 
         contactObject["birthDate"] = contact.birthDate_.toString(Qt::ISODate);
         contactObject["email"] = contact.email_;
         // добавляем номера
@@ -43,12 +44,12 @@ bool ContactManager::saveToFile(const QString& filePath) const {
             phonesObject[it.key()] = it.value();
         }
         contactObject["phoneNumbers"] = phonesObject;
-        
+        // добавляем в массив
         contactArray.append(contactObject);
     }
-
+    // настраиваем 
     QJsonDocument doc(contactArray);
-    QFile file(filePath);
+    QFile file(filePath); // открываем файлив
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         file.write(doc.toJson());
         file.close();

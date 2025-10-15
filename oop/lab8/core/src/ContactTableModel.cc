@@ -6,7 +6,7 @@ ContactTableModel::ContactTableModel(ContactManager* contactManager, QObject* pa
       contactManager_(contactManager) {}
 
 int ContactTableModel::rowCount(const QModelIndex& parent) const {
-    Q_UNUSED(parent);
+    Q_UNUSED(parent); // дабы убрать ворнинги компилятора
     return contactManager_->getContacts().size();
 }
 
@@ -15,14 +15,18 @@ int ContactTableModel::columnCount(const QModelIndex& parent) const {
     return 7;
 }
 
+// отвечает за чтение данных
+// * QVariant универсальный контейнер
 QVariant ContactTableModel::data(const QModelIndex &index, int role) const {
+    // базовая проверка
     if (!index.isValid() || index.row() >= contactManager_->getContacts().size()) {
         return QVariant();
     }
-
+    // получаем контакты
     const QList<Contact>& contacts = contactManager_->getContacts();
     const Contact& contact = contacts.at(index.row());
 
+    // роли это как ключи QTableView
     if (role == Qt::DisplayRole || role == Qt::EditRole) {
         switch (index.column()) {
             case 0: return contact.firstName_;
@@ -32,12 +36,15 @@ QVariant ContactTableModel::data(const QModelIndex &index, int role) const {
             case 4: return contact.birthDate_;
             case 5: return contact.email_;
             case 6: return contact.phoneNumbers_.value("Рабочий");
+            case 7: return contact.id_;
         }
     }
     return QVariant();
 }
 
+// метод который возвращает название столбцовв
 QVariant ContactTableModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    // проверка роли и ориентации, нужна горизонт -> (для заголовков)
     if (role != Qt::DisplayRole || orientation != Qt::Horizontal) {
         return QVariant();
     }
@@ -54,9 +61,11 @@ QVariant ContactTableModel::headerData(int section, Qt::Orientation orientation,
     }
 }
 
+// метод отвечающий за запись даты
 bool ContactTableModel::setData(const QModelIndex& index, const QVariant& value, int role) {
+    // проверка возможности редактирования
     if (index.isValid() && role == Qt::EditRole) {
-        // Получаем ссылку на контакт, а не копию
+        // получаем ссылку на контакт, а не копию
         QList<Contact>& contacts = contactManager_->getContactsMutable(); 
         Contact& contact = contacts[index.row()];
         
@@ -70,19 +79,25 @@ bool ContactTableModel::setData(const QModelIndex& index, const QVariant& value,
             case 6: contact.phoneNumbers_["Рабочий"] = value.toString(); break;
             default: return false;
         }
-
+        // запускаем сигнал от QTableView
         emit dataChanged(index, index, {role});
         return true;
     }
     return false;
 }
 
+// флаги отвечают за права юзера
 Qt::ItemFlags ContactTableModel::flags(const QModelIndex& index) const {
     return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
 }
 
 void ContactTableModel::addContact(const Contact& contact) {
     int newRow = contactManager_->getContacts().size();
+/* 
+    beginInsertRows и endInsertRows часть интерфейса QAbstractTableModel, 
+    которая обеспечивает синхронизацию между ContactTableModel и QTableView 
+    согласно архитектуре Model/View
+*/
     beginInsertRows(QModelIndex(), newRow, newRow);
     contactManager_->addContact(contact);
     endInsertRows();
@@ -90,6 +105,7 @@ void ContactTableModel::addContact(const Contact& contact) {
 
 void ContactTableModel::removeContact(int index) {
     if (index >= 0 && index < contactManager_->getContacts().size()) {
+        // аналогично связь Model/View
         beginRemoveRows(QModelIndex(), index, index);
         contactManager_->removeContact(index);
         endRemoveRows();
@@ -99,7 +115,9 @@ void ContactTableModel::removeContact(int index) {
 void ContactTableModel::updateContact(int index, const Contact& contact) {
     if (index >= 0 && index < contactManager_->getContacts().size()) {
         contactManager_->updateContact(index, contact);
-        emit dataChanged(this->index(index, 0), this->index(index, columnCount() - 1));
+        // вызываем сигнал
+        emit dataChanged(this->index(index, 0), 
+            this->index(index, columnCount() - 1));
     }
 }
 
