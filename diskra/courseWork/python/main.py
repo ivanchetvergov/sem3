@@ -6,7 +6,7 @@ def show_menu():
     variants = load_variants()
     
     if not variants:
-        print("Не удалось загрузить варианты из config/core.yaml")
+        print("Не удалось загрузить варианты из config.yaml")
         sys.exit(1)
     
     print("\n" + "="*60)

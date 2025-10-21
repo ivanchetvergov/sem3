@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
     std::string variant_name = argv[1];
     
     try {
-        FiniteFieldRules rules("../config/core.yaml", variant_name);
+        FiniteFieldRules rules("../config.yaml", variant_name);
         FiniteField calculator(rules);
 
         std::cout << "--- Starting tests for variant: " << variant_name << " ---" << std::endl;

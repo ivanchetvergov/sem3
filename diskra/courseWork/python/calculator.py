@@ -14,7 +14,7 @@ class Calculator:
         print(f"{'='*50}\n")
         
         try:
-            self.rules = FiniteFieldRules("config/core.yaml", variant_name)
+            self.rules = FiniteFieldRules("config.yaml", variant_name)
             self.engine = FiniteField(self.rules)
             
             # Получаем информацию о поле
@@ -120,7 +120,7 @@ class Calculator:
 def load_variants():
     """Загружает список доступных вариантов."""
     try:
-        with open("config/core.yaml", "r", encoding="utf-8") as f:
+        with open("config.yaml", "r", encoding="utf-8") as f:
             config = yaml.safe_load(f)
             variants = []
             for field_type, field_variants in config.get("variants", {}).items():

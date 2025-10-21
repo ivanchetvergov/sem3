@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath('build'))
 try:
     from finite_field_module import FiniteField, FiniteFieldRules  # type: ignore 
 
-    rules = FiniteFieldRules("config/core.yaml", "variant_1")
+    rules = FiniteFieldRules("config.yaml", "variant_1")
     calculator = FiniteField(rules)
 
     zero = rules.getZeroElement()

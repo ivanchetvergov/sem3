@@ -15,7 +15,7 @@ except ImportError as e:
 def field_calculator():
     """Инициализация объекта поля один раз за сессию."""
     try:
-        rules = FiniteFieldRules("config/core.yaml", "variant_1")
+        rules = FiniteFieldRules("config.yaml", "variant_1")
         field = FiniteField(rules)
         return field
     except Exception as e:

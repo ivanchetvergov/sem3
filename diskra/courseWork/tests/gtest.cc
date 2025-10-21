@@ -23,7 +23,7 @@ protected:
     char one_element;
 
     void SetUp() override {
-        const std::string config_path = "../config/core.yaml"; 
+        const std::string config_path = "../config.yaml"; 
         const std::string& variant_to_use = VARIANT_NAME.empty() ? "variant_1" : VARIANT_NAME;
 
         rules_ = std::make_unique<FiniteFieldRules>(config_path, variant_to_use);
@@ -46,7 +46,7 @@ protected:
     }
     
     void run_ternary_test(std::function<void(char, char, char)> test_func, const std::string& description) {
-        int check_count = 0;
+        int check_count = 0;св 
         for (char a : symbols) {
             for (char b : symbols) {
                 for (char c : symbols) {
