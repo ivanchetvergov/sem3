@@ -88,7 +88,7 @@ void MainWindow::setupUi()
     
     // поиск
     searchInput_ = new QLineEdit();
-    searchInput_->setPlaceholderText("Поиск по имени");
+    searchInput_->setPlaceholderText("Поиск по имени по всем полям");
     searchLayout->addWidget(new QLabel("Поиск:"));
     searchLayout->addWidget(searchInput_);
 

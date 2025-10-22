@@ -36,7 +36,7 @@ void MainWindow::onAddButtonClicked() {
         Contact& contactToEdit = contactManager_.getContactsMutable()[sourceIndex.row()];
         contactToEdit.phoneNumbers_[selectedType] = newNumber;
         
-        // 2 авт. обновление остальный полей
+        // 2 --- авт обновление остальный полей
         // используем маппер для записи данных из формы обратно в Модель
         if (mapper_->submit()) {
             QMessageBox::information(this, "Успех", "Данные успешно отредактированы.");
@@ -53,8 +53,8 @@ void MainWindow::onAddButtonClicked() {
     }
 
     // общие действия
-    contactManager_.saveToFile("contacts.json");    // сохраняем на диск
-    setEditingMode(false);                          // возвращаемся в режим просмотра
+    contactManager_.saveToFile("../data/contacts.json");    // сохраняем на диск
+    setEditingMode(false);                                  // возвращаемся в режим просмотра
 }
 
 // слот для кнопки "Удалить"
@@ -72,11 +72,11 @@ void MainWindow::onRemoveButtonClicked() {
     // удаляем из исходной модели
     tableModel_->removeContact(sourceRow);
     
-    contactManager_.saveToFile("contacts.json");
-    setEditingMode(false); 
+    contactManager_.saveToFile("../data/contacts.json");
+    // setEditingMode(false); // ! теперь явно остается контакт
 }
 
-// Слот для кнопки "Редактировать"
+// cлот для кнопки "Редактировать"
 void MainWindow::onEditButtonClicked() {
     QModelIndex proxyIndex = tableView_->currentIndex();
     if (!proxyIndex.isValid()) {
@@ -85,17 +85,41 @@ void MainWindow::onEditButtonClicked() {
     }
 
     setEditingMode(true);
-    mapper_->setCurrentIndex(proxyIndex.row());
+    mapper_->setCurrentIndex(proxyIndex.row()); // указываем мапперу строку
     
     QMessageBox::information(this, "Редактирование", "Теперь вы можете редактировать данные. Нажмите 'Сохранить' для применения.");
 }
+
 void MainWindow::onCancelButtonClicked() {
     mapper_->revert(); // откатываем все изменения в полях, сделанные маппером
     setEditingMode(false);
 }
 
 void MainWindow::onSearchTextChanged(const QString& text) {
-    proxyModel_->setFilterRegularExpression(text);
+    QString trimmed = text.trimmed();
+    proxyModel_->setFilterKeyColumn(-1);
+    proxyModel_->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
+    if (trimmed.isEmpty()) {
+        proxyModel_->setFilterRegularExpression(QRegularExpression());
+        proxyModel_->setFilterRole(Qt::DisplayRole);
+        return;
+    }
+
+    // извлекаем только цифры из запроса
+    QString digits;
+    for (QChar c : trimmed) if (c.isDigit()) digits += c;
+
+    if (!digits.isEmpty()) {
+        // ищем по нормализованной строке (в модели — только цифры)
+        proxyModel_->setFilterRole(ContactTableModel::NormalizedPhonesRole);
+        proxyModel_->setFilterRegularExpression(QRegularExpression(QRegularExpression::escape(digits)));
+    } else {
+        // обычный текстовый поиск по DisplayRole
+        proxyModel_->setFilterRole(Qt::DisplayRole);
+        proxyModel_->setFilterRegularExpression(QRegularExpression(QRegularExpression::escape(trimmed),
+                                                                  QRegularExpression::CaseInsensitiveOption));
+    }
 }
 
 // слот для обработки выбора строки в таблице
@@ -103,8 +127,18 @@ void MainWindow::onSelectionChanged() {
     QModelIndex proxyIndex = tableView_->currentIndex();
     bool rowIsSelected = proxyIndex.isValid();
     
-    removeButton_->setEnabled(rowIsSelected);
-    editButton_->setEnabled(rowIsSelected);
+    // показываем / скрываем кнопки редактирования и удаления в зависимости от выбора
+    // также прячем/показываем только если мы не в режиме редактирования
+    if (!isInEditMode_) {
+        removeButton_->setVisible(rowIsSelected);
+        editButton_->setVisible(rowIsSelected);
+        removeButton_->setEnabled(rowIsSelected);
+        editButton_->setEnabled(rowIsSelected);
+    } else {
+        // в режиме редактирования кнопки могут быть скрыты по логике setEditingMode
+        removeButton_->setVisible(false);
+        editButton_->setVisible(false);
+    }
     
     if (rowIsSelected && !isInEditMode_) {
         // синхронизируем маппер с текущей строкой
@@ -219,7 +253,7 @@ bool MainWindow::validateContact(const Contact& contact) {
     }
     if (!Validator::isValidBirthDate(contact.birthDate_)) { errors += "Неверная Дата рождения. "; valid = false; }
     if (!Validator::isValidEmail(contact.email_)) { errors += "Неверный Email. "; valid = false; }
-    
+
     for (const QString& number : contact.phoneNumbers_.values()) {
         if (!Validator::isValidPhoneNumber(number) && !number.isEmpty()) { 
             errors += "Неверный Телефон. "; 

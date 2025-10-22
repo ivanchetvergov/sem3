@@ -36,7 +36,6 @@ MainWindow::MainWindow(QWidget *parent)
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
     
-    
     // * --- 4 связь сигналов и слотов
     // --- CRUD --- 
     connect(addButton_, &QPushButton::clicked, this, &MainWindow::onAddButtonClicked);
@@ -75,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     // * 7 --- начальная загрузка данных ---
-    if (contactManager_.loadFromFile("contacts.json")) 
+    if (contactManager_.loadFromFile("../data/contacts.json")) 
         tableModel_->resetTable();    
 }
 
@@ -92,7 +91,7 @@ void MainWindow::setupMapper() {
     mapper_->addMapping(lastNameInput_, 1); 
     mapper_->addMapping(middleNameInput_, 2); 
     mapper_->addMapping(addressInput_, 3);
-    mapper_->addMapping(birthDateInput_, 4, "date");
+    mapper_->addMapping(birthDateInput_, 4);
     mapper_->addMapping(emailInput_, 5);
 
 }

@@ -63,7 +63,7 @@ private:
     QTableView* tableView_;                         // виджет для отображения данных  
     
     // * --- виджеты для ввода данных ---
-    QDataWidgetMapper* mapper_;                     // инструмент для авт. синх. формы и таблицы
+    QDataWidgetMapper* mapper_;                     // инструмент для авт. синх. формы и таблицы при редакте
     
     QLineEdit* firstNameInput_;
     QLineEdit* lastNameInput_;
@@ -83,7 +83,6 @@ private:
 
     // * --- поиск и сортировка ---
     QLineEdit* searchInput_;
-    QComboBox* sortComboBox_;                       // для выбора поля сортировки
 
     // * --- слои ---
     QVBoxLayout* mainLayout_;                       // главный слой окна
