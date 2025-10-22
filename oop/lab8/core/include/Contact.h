@@ -6,9 +6,9 @@
 #include <QMap>
 #include <QUuid>
 
-//* служит ORM моделью QTable
+//* служит моделью QTable
 struct Contact {
-    Q_GADGET
+    // Q_GADGET
 public:
     QString firstName_;
     QString lastName_;

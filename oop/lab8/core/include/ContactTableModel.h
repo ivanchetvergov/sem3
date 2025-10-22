@@ -7,7 +7,7 @@
 #include <QList>
 #include <QVariant>
 
-//* класс-адаптер (mapper) ContactManager -> QTableView
+//* класс-адаптер ContactManager -> QTableView
 class ContactTableModel : public QAbstractTableModel {
     Q_OBJECT
 
@@ -41,6 +41,13 @@ public:
     // * --- геттеры ---
     const Contact& getContact(int row) const;
 
+    // * --- вспомогательные методы ---
+    QString normalizeDigits(const QString& s);
+    QString normalizeDigits(const QString& s) const;
+
+    // *статические константы для пользовательских ролей
+    static constexpr int NormalizedPhonesRole = Qt::UserRole + 1;
+    static constexpr int ContactIdRole = Qt::UserRole + 2;
 
 public slots:
     // слот для полного сброса и перерисовки всей таблицы
@@ -49,6 +56,5 @@ public slots:
 private:
     // указатель на источник данных
     ContactManager* contactManager_;
-    // статическая константа
-    static constexpr int ContactIdRole = Qt::UserRole + 1; 
+
 };

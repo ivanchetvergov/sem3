@@ -1,18 +1,24 @@
 // ContactTableModel.cc 
 #include "ContactTableModel.h"
+#include <QRegularExpression>
 
 ContactTableModel::ContactTableModel(ContactManager* contactManager, QObject* parent)
     : QAbstractTableModel(parent),
       contactManager_(contactManager) {}
 
 int ContactTableModel::rowCount(const QModelIndex& parent) const {
-    Q_UNUSED(parent); // дабы убрать ворнинги компилятора
     return contactManager_->getContacts().size();
 }
 
 int ContactTableModel::columnCount(const QModelIndex& parent) const {
-    Q_UNUSED(parent);
     return 7;
+}
+
+QString ContactTableModel::normalizeDigits(const QString& s) const {
+    QString out;
+    out.reserve(s.size());
+    for (QChar c : s) if (c.isDigit()) out += c;
+    return out;
 }
 
 // отвечает за чтение данных
@@ -26,6 +32,20 @@ QVariant ContactTableModel::data(const QModelIndex &index, int role) const {
     const QList<Contact>& contacts = contactManager_->getContacts();
     const Contact& contact = contacts.at(index.row());
 
+    // пользовательская роль для нормализованных телефонов
+    if (role == NormalizedPhonesRole) {
+        const Contact &c = getContact(index.row());
+        QString allDigits;
+        for (const QString &num : c.phoneNumbers_.values()) {
+            QString d = normalizeDigits(num);
+            if (!d.isEmpty()) {
+                if (!allDigits.isEmpty()) allDigits += ' ';
+                allDigits += d;
+            }
+        }
+        return allDigits;
+    }
+
     // роли это как ключи QTableView
     if (role == Qt::DisplayRole || role == Qt::EditRole) {
         switch (index.column()) {
@@ -38,10 +58,10 @@ QVariant ContactTableModel::data(const QModelIndex &index, int role) const {
             case 6: return contact.phoneNumbers_.values().join(", "); 
         }
     }
-    // пользовательская роль ContactIdRole (256: int)
-    if (role == ContactIdRole) {
-    return contact.id_; // возвращаем уникальный ID
-    }
+    // // пользовательская роль ContactIdRole (256: int)
+    // if (role == ContactIdRole) {
+    //     return contact.id_; // возвращаем уникальный ID
+    // }
 
     return QVariant();
 }
