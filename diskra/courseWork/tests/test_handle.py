@@ -5,10 +5,10 @@ import os
 sys.path.insert(0, os.path.abspath('build'))
 
 try:
-    from finite_field_module import FiniteField, FiniteFieldRules  # type: ignore 
+    from finite_field_module import FiniteRing, FiniteRingRules  # type: ignore 
 
-    rules = FiniteFieldRules("config.yaml", "variant_1")
-    calculator = FiniteField(rules)
+    rules = FiniteRingRules("config.yaml", "variant_1")
+    calculator = FiniteRing(rules)
 
     zero = rules.getZeroElement()
     one = rules.getOneElement()

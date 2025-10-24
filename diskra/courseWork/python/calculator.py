@@ -4,7 +4,7 @@ import os
 import yaml
 
 sys.path.insert(0, 'build')
-from finite_field_module import FiniteField, FiniteFieldRules  # type: ignore
+from finite_field_module import FiniteRing, FiniteRingRules  # type: ignore
 
 
 class Calculator:
@@ -14,8 +14,8 @@ class Calculator:
         print(f"{'='*50}\n")
         
         try:
-            self.rules = FiniteFieldRules("config.yaml", variant_name)
-            self.engine = FiniteField(self.rules)
+            self.rules = FiniteRingRules("config.yaml", variant_name)
+            self.engine = FiniteRing(self.rules)
             
             # Получаем информацию о поле
             self.size = self.rules.getSize()
@@ -32,11 +32,11 @@ class Calculator:
                 sym = self.rules.getValueChar(i)
                 self.symbols.append(sym)
             
-            print(f"✓ Символы поля: {self.symbols}")
+            print(f"# Символы поля: {self.symbols}")
             print(f"\n{'='*50}\n")
             
         except Exception as e:
-            print(f"✗ ОШИБКА инициализации: {e}")
+            print(f"--- ОШИБКА инициализации: {e}")
             sys.exit(1)
     
     def calculate(self, op1: str, operator: str, op2: str) -> str:
@@ -77,7 +77,7 @@ class Calculator:
                 expression = input(">>> ").strip()
                 
                 if expression.lower() in ['exit', 'quit', 'q']:
-                    print("\nДо свидания! 👋\n")
+                    print("\nДо свидания!\n")
                     break
                 
                 if not expression:
@@ -90,9 +90,9 @@ class Calculator:
                     # Просто символ - показываем его индекс
                     if parts[0] in self.symbols:
                         idx = self.rules.getCharValue(parts[0])
-                        print(f"  → '{parts[0]}' имеет индекс {idx}")
+                        print(f"  -> '{parts[0]}' имеет индекс {idx}")
                     else:
-                        print(f"  → Символ '{parts[0]}' не найден в поле")
+                        print(f"  -> Символ '{parts[0]}' не найден в поле")
                     continue
                 
                 if len(parts) != 3:
@@ -112,7 +112,7 @@ class Calculator:
                     print(f"  → {result}")
                     
             except KeyboardInterrupt:
-                print("\n\nПрервано пользователем. До свидания! 👋\n")
+                print("\n\nПрервано пользователем. До свидания!\n")
                 break
             except Exception as e:
                 print(f"  → Неожиданная ошибка: {e}")

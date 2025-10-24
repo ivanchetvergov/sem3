@@ -3,8 +3,8 @@
 #include <stdexcept>
 #include <vector>
 #include <functional>
-#include "FiniteFieldRules.h"
-#include "FiniteField.h"
+#include "FiniteRingRules.h"
+#include "FiniteRing.h"
 
 void run_test(const std::string& description, std::function<void()> test_func) {
     try {
@@ -16,7 +16,7 @@ void run_test(const std::string& description, std::function<void()> test_func) {
     }
 }
 
-void run_all_tests(const FiniteField& calculator) {
+void run_all_tests(const FiniteRing& calculator) {
     run_test("Addition", [&]() {
         char result = calculator.add(
                                       calculator.getRules().getOneElement(), 
@@ -81,8 +81,8 @@ int main(int argc, char* argv[]) {
     std::string variant_name = argv[1];
     
     try {
-        FiniteFieldRules rules("../config.yaml", variant_name);
-        FiniteField calculator(rules);
+        FiniteRingRules rules("../config.yaml", variant_name);
+        FiniteRing calculator(rules);
 
         std::cout << "--- Starting tests for variant: " << variant_name << " ---" << std::endl;
         run_all_tests(calculator);
