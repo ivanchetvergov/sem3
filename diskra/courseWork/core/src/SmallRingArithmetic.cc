@@ -1,90 +1,138 @@
+// core/src/SmallRingArithmetic.cc
 #include "SmallRingArithmetic.h"
 #include <stdexcept>
-#include <iostream>
 
-using std::string;
-using std::vector;
-using std::map;
-using std::runtime_error;
-using std::cerr;
-using std::endl;
-
-// * конструктор из файла конфигурации и имени варианта
-SmallRingArithmetic::SmallRingArithmetic(const string& config_file,
-                                   const string& variant_name) {
-    // загружаем YAML
-    YAML::Node root = YAML::LoadFile(config_file);
-    if (!root["variants"])
-        throw runtime_error("config missing 'variants'");
+char SmallRingArithmetic::add(char a, char b) const {
+    // ? вариант через сложение индексов O(1)
+    // // получаем индексы символов
+    // int va = rules_.getCharValue(a);
+    // int vb = rules_.getCharValue(b);
+    // int n = rules_.getSize();
     
-    bool found = false;
-    // ищем нужный вариант
-    for (const auto& type_node : root["variants"]) {
-        // перебираем варианты внутри типа
-        for (const auto& var_node : type_node.second) {
-            // * если нашли нужный вариант - инициализируемся
-            if (var_node.first.as<string>() == variant_name) {
-                // вызываем инициализацию правил
-                init(var_node.second);
-                found = true;
-                break;
-            }
+    // // Складываем индексы по модулю
+    // int result_index = (va + vb) % n;
+    
+    // return rules_.getValueChar(result_index);
+
+    // ! вариант через последовательное + 1 O(N)
+    const char zero = rules_.getZeroElement();
+    const int vb = rules_.getCharValue(b); // сколько раз нужно прибавить 1
+    
+    if (b == zero) {
+        return a;
+    }
+    
+    char result = a;
+    
+    for (int i = 0; i < vb; ++i) {
+        int current_val = rules_.getCharValue(result);
+        int next_val = (current_val + 1) % rules_.getSize(); 
+        result = rules_.getValueChar(next_val);
+    }
+    
+    return result;
+}
+
+char SmallRingArithmetic::findAdditiveInverse(char element) const {
+    const char zero = rules_.getZeroElement();
+    
+    // ноль обратен сам себе
+    if (element == zero) {
+        return zero;
+    }
+    
+    // ием x такой что add(element, x) = zero
+    const int size = rules_.getSize();
+    
+    for (int i = 0; i < size; ++i) {
+        char candidate = rules_.getValueChar(i);
+        if (add(element, candidate) == zero) { 
+            return candidate;
         }
-        if (found) break;
     }
-    if (!found)
-        throw runtime_error("variant not found: " + variant_name);
+    
+    throw std::runtime_error("Additive inverse not found for element: " + 
+                           std::string(1, element));
 }
 
-void SmallRingArithmetic::init(const YAML::Node& variant_node) {
-    // --- 1 чтение основных параметров поля
-    size_ = variant_node["size"].as<int>();
-    zero_ = variant_node["zero_element"].as<string>()[0];
-    one_  = variant_node["one_element"].as<string>()[0];
+char SmallRingArithmetic::subtract(char a, char b) const {
+    // ? вариант разницы индексов O(1)
+    // int va = rules_.getCharValue(a);
+    // int vb = rules_.getCharValue(b);
+    // int n = rules_.getSize();
+    
+    // // Вычитаем с учетом модуля
+    // int result_index = (va - vb + n) % n;
+    
+    // return rules_.getValueChar(result_index);
 
-    // --- 2 чтение правила "плюс один"
-    YAML::Node rpo = variant_node["rule_plus_one"];
-    if (!rpo || !rpo.IsSequence())
-        throw runtime_error("rule_plus_one must be a sequence");
-
-    // --- 3 формирование последовательности символов поля
-    vector<string> seq_strs = rpo.as<vector<string>>();
-    vector<char> seq;
-    seq.reserve(seq_strs.size());
-    for (auto &s : seq_strs) {
-        if (s.empty())
-            throw runtime_error("empty string in rule_plus_one");
-        seq.push_back(s[0]);
-    }
-
-    // --- 4 построение диаграммы Хассе
-    map<char, char> next;
-    for (int i = 0; i < size_ - 1; ++i) {
-        next[seq[i]] = seq[i + 1];
-    }
-    next[seq.back()] = seq.front();     // замыкаем цикл
-
-    // --- 5 обход цикла, формировани отображения символ -> индекс
-    values_.clear();        // диаграмма Хассе (как массив а не мапа)
-    char_to_val_.clear();   // отображение символ → индекс
-    char cur = zero_;
-    for (int i = 0; i < size_; ++i) {
-        values_.push_back(cur);
-        char_to_val_[cur] = i;
-        cur = next[cur];
-    }
-
-    // --- 6 проверка корректности построения поля
-    if ((int)values_.size() != size_) {
-        throw runtime_error("incomplete mapping, got " +
-            to_string(values_.size()) + ", expected " + to_string(size_));
-    }
+    // ! вариант через сложение с обратным (N))
+    char neg_b = findAdditiveInverse(b); 
+    return add(a, neg_b);
 }
 
-int SmallRingArithmetic::getCharValue(char c) const {
-    auto it = char_to_val_.find(c);
-    if (it == char_to_val_.end())
-        throw runtime_error("invalid character: " + string(1, c));
-    return it->second;
+char SmallRingArithmetic::multiply(char a, char b) const {
+    
+    // ? умножаем индексы по модулю N (O(1) операция)
+    // long long product_val = (long long)va * vb;
+    // int result_index = product_val % n;
+    
+    // return rules_.getValueChar(result_index);
+
+    // ! умножение через повторное сложение O(N^2)
+    const char zero = rules_.getZeroElement();
+    
+    // умножение на ноль
+    if (a == zero || b == zero) {
+        return zero;
+    }
+    
+    // получаем индекс второго операнда
+    int vb = rules_.getCharValue(b);
+    
+    char result = zero;
+    for (int i = 0; i < vb; ++i) {
+        result = add(result, a);
+    }
+    
+    return result;
 }
 
+char SmallRingArithmetic::divide(char a, char b) const {
+    const char zero = rules_.getZeroElement();
+    
+    // деление на ноль
+    if (b == zero) {
+        throw std::runtime_error("Division by zero");
+    }
+    
+    // находим обратный элемент
+    char inv = findMultiplicativeInverse(b);
+    return multiply(a, inv);
+}
+
+char SmallRingArithmetic::findMultiplicativeInverse(char element) const {
+    const char zero = rules_.getZeroElement();
+    const char one = rules_.getOneElement();
+    
+    // У нуля нет обратного
+    if (element == zero) {
+        throw std::runtime_error("Zero has no multiplicative inverse");
+    }
+    
+    const int size = rules_.getSize();
+    
+    // Ищем x такой, что element * x = 1
+    for (int i = 0; i < size; ++i) {
+        char candidate = rules_.getValueChar(i);
+        char product = multiply(element, candidate);
+        
+        if (product == one) {
+            return candidate;
+        }
+    }
+    
+    // Не нашли обратный
+    throw std::runtime_error("No multiplicative inverse for element: " + 
+                           std::string(1, element));
+}

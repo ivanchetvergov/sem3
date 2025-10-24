@@ -13,8 +13,9 @@ public:
 
     // * получить правила поля
     const FiniteRingRules& getRules() const { return rules_; }
-    // * найти мультипликативный обратный элемент
+    // * методы поиска обратных элементов
     char findMultiplicativeInverse(char element) const;
+    char findAdditiveInverse(char element) const;
 
 private:
     //  ссылка на правила поля
