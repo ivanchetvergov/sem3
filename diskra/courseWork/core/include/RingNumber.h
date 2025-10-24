@@ -1,28 +1,53 @@
+// core/include/RingNumber.h
+#pragma once
+#include <string>
+#include <vector>
+#include "FiniteRingRules.h"
+
+/*
+ * Представляет многосимвольное число в конечном кольце.
+ * Хранит цифры в порядке: младший разряд первым (little-endian).
+ * 
+ * Пример: число "abc" хранится как ['c', 'b', 'a']
+ */
 class RingNumber {
 public:
-    RingNumber(const FiniteRingRules& rules);
-    RingNumber(const FiniteRingRules& rules, const string& value);
-    RingNumber(const FiniteRingRules& rules, const vector<char>& digits);
+    // * конструкторы
+    explicit RingNumber(const FiniteRingRules& rules);
+    RingNumber(const FiniteRingRules& rules, const std::string& value);
     
-    // Доступ к цифрам
-    size_t length() const;
+    // * копирование и присваивание
+    RingNumber(const RingNumber& other);
+    RingNumber& operator=(const RingNumber& other);
+    
+    // * доступ к цифрам (младший разряд = индекс 0)
+    size_t length() const { return digits_.size(); }
     char operator[](size_t index) const;
     char& operator[](size_t index);
+    char getDigit(size_t index) const; 
     
-    // Преобразования
-    string toString() const;
-    vector<char> toVector() const;
+    // * преобразования
+    std::string toString() const;
+    std::vector<char> toVector() const { return digits_; }
     
-    // Нормализация (удаление ведущих нулей)
-    void normalize();
+    // * модификация
+    void normalize();  // удаляет ведущие нули
+    void reverse();    // меняет порядок цифр
     
-    // Проверки
+    // * проверки
     bool isZero() const;
     bool isValid() const;
     
+    // * операторы сравнения
+    bool operator==(const RingNumber& other) const;
+    bool operator!=(const RingNumber& other) const;
+    
+    // * получить правила
+    const FiniteRingRules& getRules() const { return rules_; }
+
 private:
     const FiniteRingRules& rules_;
-    vector<char> digits_;  // Младший разряд первый!
+    std::vector<char> digits_; 
     
-    void validate();
+    void validate(); 
 };
