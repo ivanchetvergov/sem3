@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 using std::string;
 using std::vector;
@@ -135,7 +136,6 @@ void FiniteRingRules::init(const YAML::Node& variant_node) {
     cerr << "---------------------=\n" << endl;
 #endif
 
-
 int FiniteRingRules::getCharValue(char c) const {
     auto it = char_to_val_.find(c);
     
@@ -149,4 +149,41 @@ int FiniteRingRules::getCharValue(char c) const {
 
 bool FiniteRingRules::isValidChar(char c) const {
     return char_to_val_.find(c) != char_to_val_.end();
+}
+
+void FiniteRingRules::printRules() const {
+    std::cout << "\n==========================================" << std::endl;
+    std::cout << "          АРИФМЕТИЧЕСКИЕ ПРАВИЛА           " << std::endl;
+    std::cout << "==========================================" << std::endl;
+    std::cout << "Размер кольца (N): Z" << size_ << std::endl;
+    std::cout << "Нулевой элемент (0): '" << zero_ << "'" << std::endl;
+    std::cout << "Единичный элемент (1): '" << one_ << "'" << std::endl;
+    
+    // Вывод порядка символов и их индексов
+    std::cout << "\n--- Таблица Символ -> Индекс (Отношение порядка a < b < ...) ---" << std::endl;
+    
+    std::cout << "Индекс (Значение): ";
+    for (int i = 0; i < size_; ++i) {
+        std::cout << std::setw(3) << i;
+    }
+    std::cout << std::endl;
+
+    std::cout << "Символ:            ";
+    for (int i = 0; i < size_; ++i) {
+        char c = getValueChar(i); 
+        std::cout << std::setw(3) << c;
+    }
+    std::cout << std::endl;
+
+    // Дополнительная проверка на правило +1
+    std::cout << "\n--- Проверка Правила '+1' (X + 1) ---" << std::endl;
+    std::cout << "X  | X + 1" << std::endl;
+    std::cout << "---|------" << std::endl;
+    for (int i = 0; i < size_; ++i) {
+        char current_char = getValueChar(i);
+        // Следующий элемент в цикле (использует индексы, как в SmallRingArithmetic)
+        char next_char = getValueChar((i + 1) % size_); 
+        std::cout << current_char << "  | " << next_char << std::endl;
+    }
+    std::cout << "==========================================" << std::endl;
 }
