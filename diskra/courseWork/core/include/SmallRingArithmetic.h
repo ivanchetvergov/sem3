@@ -1,9 +1,9 @@
 #pragma once
-#include "FiniteFieldRules.h"
+#include "FiniteRingRules.h"
 
-class FiniteField {
+class SmallRingArithmetic {
 public:
-    explicit FiniteField(const FiniteFieldRules& r) : rules_(r) {}
+    explicit SmallRingArithmetic(const FiniteRingRules& r) : rules_(r) {}
 
     // * арифметические операции в поле
     char add(char a, char b) const;
@@ -12,11 +12,11 @@ public:
     char divide(char a, char b) const;
 
     // * получить правила поля
-    const FiniteFieldRules& getRules() const { return rules_; }
+    const FiniteRingRules& getRules() const { return rules_; }
     // * найти мультипликативный обратный элемент
     char findMultiplicativeInverse(char element) const;
 
 private:
     //  ссылка на правила поля
-    const FiniteFieldRules& rules_;
+    const FiniteRingRules& rules_;
 };

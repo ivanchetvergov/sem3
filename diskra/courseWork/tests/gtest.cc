@@ -8,16 +8,16 @@
 #include <iostream>
 #include <functional>
 
-#include "FiniteField.h" 
-#include "FiniteFieldRules.h" 
+#include "FiniteRing.h" 
+#include "FiniteRingRules.h" 
 
 std::string VARIANT_NAME;
 
 // --- ФИКСТУРА ---
-class FieldAxiomTest : public ::testing::Test {
+class RingAxiomTest : public ::testing::Test {
 protected:
-    std::unique_ptr<FiniteFieldRules> rules_;
-    std::unique_ptr<FiniteField> calculator_;
+    std::unique_ptr<FiniteRingRules> rules_;
+    std::unique_ptr<FiniteRing> calculator_;
     std::vector<char> symbols;
     char zero_element;
     char one_element;
@@ -26,8 +26,8 @@ protected:
         const std::string config_path = "../config.yaml"; 
         const std::string& variant_to_use = VARIANT_NAME.empty() ? "variant_1" : VARIANT_NAME;
 
-        rules_ = std::make_unique<FiniteFieldRules>(config_path, variant_to_use);
-        calculator_ = std::make_unique<FiniteField>(*rules_);
+        rules_ = std::make_unique<FiniteRingRules>(config_path, variant_to_use);
+        calculator_ = std::make_unique<FiniteRing>(*rules_);
 
         for (int i = 0; i < rules_->getSize(); ++i)
             symbols.push_back(rules_->getValueChar(i));
@@ -46,7 +46,7 @@ protected:
     }
     
     void run_ternary_test(std::function<void(char, char, char)> test_func, const std::string& description) {
-        int check_count = 0;св 
+        int check_count = 0;
         for (char a : symbols) {
             for (char b : symbols) {
                 for (char c : symbols) {
@@ -60,7 +60,7 @@ protected:
 };
 
 
-TEST_F(FieldAxiomTest, Axiom_01_Commutativity) {
+TEST_F(RingAxiomTest, Axiom_01_Commutativity) {
     for (char a : symbols) {
         for (char b : symbols) {
             //* a + b == b + a
@@ -75,7 +75,7 @@ TEST_F(FieldAxiomTest, Axiom_01_Commutativity) {
 }
 
 
-TEST_F(FieldAxiomTest, Axiom_02_IdentityElements) {
+TEST_F(RingAxiomTest, Axiom_02_IdentityElements) {
     const char zero = zero_element;
     const char one = one_element;
 
@@ -95,7 +95,7 @@ TEST_F(FieldAxiomTest, Axiom_02_IdentityElements) {
 }
 
 
-TEST_F(FieldAxiomTest, Axiom_03_Associativity) {
+TEST_F(RingAxiomTest, Axiom_03_Associativity) {
     run_ternary_test([this](char a, char b, char c) {
         //* (a + b) + c == a + (b + c)
         char left_add = calculator_->add(calculator_->add(a, b), c);
@@ -112,7 +112,7 @@ TEST_F(FieldAxiomTest, Axiom_03_Associativity) {
 }
 
 
-TEST_F(FieldAxiomTest, Axiom_04_Distributivity) {
+TEST_F(RingAxiomTest, Axiom_04_Distributivity) {
     run_ternary_test([this](char a, char b, char c) {
         //* a * (b + c) == a * b + a * c
         char left = calculator_->multiply(a, calculator_->add(b, c));
@@ -124,7 +124,7 @@ TEST_F(FieldAxiomTest, Axiom_04_Distributivity) {
 }
 
 
-TEST_F(FieldAxiomTest, Axiom_05_InverseAndClosure) {
+TEST_F(RingAxiomTest, Axiom_05_InverseAndClosure) {
     const char zero = zero_element;
 
     for (char a : symbols) {

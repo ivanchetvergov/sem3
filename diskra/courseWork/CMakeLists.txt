@@ -13,8 +13,8 @@ find_package(GTest REQUIRED)
 
 # модуль для python
 pybind11_add_module(finite_field_module
-    core/src/FiniteField.cc
-    core/src/FiniteFieldRules.cc
+    core/src/FiniteRing.cc
+    core/src/FiniteRingRules.cc
     core/py_binding.cc
 )
 target_link_libraries(finite_field_module PRIVATE yaml-cpp::yaml-cpp)
@@ -25,8 +25,8 @@ target_link_libraries(finite_field_module PRIVATE yaml-cpp::yaml-cpp)
 # 1. создаем исполняемый файл для тестов
 add_executable(
     t
-    core/src/FiniteField.cc
-    core/src/FiniteFieldRules.cc
+    core/src/FiniteRing.cc
+    core/src/FiniteRingRules.cc
     tests/gtest.cc
 )
 

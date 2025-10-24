@@ -6,7 +6,7 @@ import sys
 sys.path.insert(0, os.path.abspath('build')) 
 
 try:
-    from finite_field_module import FiniteField, FiniteFieldRules # type: ignore
+    from finite_field_module import FiniteRing, FiniteRingRules # type: ignore
 except ImportError as e:
     pytest.fail(f"Не удалось импортировать модуль: {e}. Убедитесь, что make отработал.")
 
@@ -15,8 +15,8 @@ except ImportError as e:
 def field_calculator():
     """Инициализация объекта поля один раз за сессию."""
     try:
-        rules = FiniteFieldRules("config.yaml", "variant_1")
-        field = FiniteField(rules)
+        rules = FiniteRingRules("config.yaml", "variant_1")
+        field = FiniteRing(rules)
         return field
     except Exception as e:
         pytest.fail(f"Ошибка при инициализации: {e}")

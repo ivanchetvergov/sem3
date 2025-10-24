@@ -1,4 +1,4 @@
-#include "FiniteFieldRules.h"
+#include "SmallRingArithmetic.h"
 #include <stdexcept>
 #include <iostream>
 
@@ -10,7 +10,7 @@ using std::cerr;
 using std::endl;
 
 // * конструктор из файла конфигурации и имени варианта
-FiniteFieldRules::FiniteFieldRules(const string& config_file,
+SmallRingArithmetic::SmallRingArithmetic(const string& config_file,
                                    const string& variant_name) {
     // загружаем YAML
     YAML::Node root = YAML::LoadFile(config_file);
@@ -36,7 +36,7 @@ FiniteFieldRules::FiniteFieldRules(const string& config_file,
         throw runtime_error("variant not found: " + variant_name);
 }
 
-void FiniteFieldRules::init(const YAML::Node& variant_node) {
+void SmallRingArithmetic::init(const YAML::Node& variant_node) {
     // --- 1 чтение основных параметров поля
     size_ = variant_node["size"].as<int>();
     zero_ = variant_node["zero_element"].as<string>()[0];
@@ -81,7 +81,7 @@ void FiniteFieldRules::init(const YAML::Node& variant_node) {
     }
 }
 
-int FiniteFieldRules::getCharValue(char c) const {
+int SmallRingArithmetic::getCharValue(char c) const {
     auto it = char_to_val_.find(c);
     if (it == char_to_val_.end())
         throw runtime_error("invalid character: " + string(1, c));
