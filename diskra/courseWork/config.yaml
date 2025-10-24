@@ -9,13 +9,13 @@ variants:
     variant_1:
       size: 8
       rule_plus_one: [b, c, e, g, d, h, f, a]
-      zero_element: b
-      one_element: c
+      zero_element: a
+      one_element: b
     variant_2:
       size: 8
       rule_plus_one: [b, f, g, c, a, h, e, d]
-      zero_element: b
-      one_element: f
+      zero_element: a
+      one_element: b
     # X1:
     #   size: 8
     #   rule_plus_one:
