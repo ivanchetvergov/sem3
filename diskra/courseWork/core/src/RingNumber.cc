@@ -22,28 +22,43 @@ RingNumber::RingNumber(const FiniteRingRules& rules, const string& value)
         throw runtime_error("Cannot create RingNumber from empty string");
     }
 
+    // ! обработка унарного минуса
+    string new_value = value;
+    if (value.length() > 0 && value[0] == '-') {
+        new_value = value.substr(1);
+    }
+
     // копируем в обратном порядке
-    digits_.resserve(value.size());
-    for (auto it = value.rbegin(); it != value.rend(); ++it) {
+    digits_.reserve(value.size());
+    for (auto it = new_value.rbegin(); it != new_value.rend(); ++it) {
         char c = *it;
-        if (!rules_.isValidSymbol(c)) {
+        if (!rules_.isValidChar(c)) {
             throw runtime_error("Invalid symbol in RingNumber constructor: " + string(1, c));
         }
         digits_.push_back(c);
     }
     normalize();
+}   
+
+RingNumber::RingNumber(const FiniteRingRules& rules, const vector<char>& value)
+    : rules_(rules) {
+    if (value.empty()) {
+        throw runtime_error("Cannot create RingNumber from empty vector");
+    }
+    digits_ = value;
+    normalize();
     validate();
-}     
+}  
 
 // копирования
 RingNumber::RingNumber(const RingNumber& other)
-    :rules_(other.rules__), digits_(other.digits_) {}
+    :rules_(other.rules_), digits_(other.digits_) {}
 
 // оператор присваивания
 RingNumber& RingNumber::operator=(const RingNumber& other) {
     if (this != &other) {
         if (&rules_ != &other.rules_){
-            throw runtime_errror("Cannot assign RingNumbers with different rules");
+            throw runtime_error("Cannot assign RingNumbers with different rules");
         }
         digits_ = other.digits_;
     }
@@ -65,12 +80,12 @@ char RingNumber::getDigit(size_t index) const {
 
 // преобразование в строку 
 string RingNumber::toString() const {
-    if (digit_.empty()){
-        return string(1, rules_.getZeroElement()):
+    if (digits_.empty()){
+        return string(1, rules_.getZeroElement());
     }
 
     string result;
-    result.reserve(digits_size());
+    result.reserve(digits_.size());
 
     // записываем в обратном порядке
     for (auto it = digits_.rbegin(); it != digits_.rend(); ++it){
@@ -132,5 +147,15 @@ bool RingNumber::operator==(const RingNumber& other) const {
 
 bool RingNumber::operator!=(const RingNumber& other) const {
     return !(*this == other);
+}
+
+void RingNumber::validate() {
+    try {
+        for (auto c : digits_) {
+            rules_.getCharValue(c); 
+        }
+    } catch (const std::out_of_range& e) {
+        throw std::runtime_error("RingNumber is in an invalid state: " + std::string(e.what()));
+    }
 }
 

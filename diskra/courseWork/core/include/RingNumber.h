@@ -15,6 +15,7 @@ public:
     // * конструкторы
     explicit RingNumber(const FiniteRingRules& rules);
     RingNumber(const FiniteRingRules& rules, const std::string& value);
+    RingNumber(const FiniteRingRules& rules, const std::vector<char>& digits);
     
     // * копирование и присваивание
     RingNumber(const RingNumber& other);
