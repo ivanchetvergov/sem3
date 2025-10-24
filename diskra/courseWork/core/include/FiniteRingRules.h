@@ -21,6 +21,8 @@ public:
     // * проверка валидности символа
     bool isValidChar(char c) const;
 
+    void printRules() const;
+
 private:
     void init(const YAML::Node& variant_node);
 

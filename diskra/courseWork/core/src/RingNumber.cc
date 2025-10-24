@@ -66,16 +66,26 @@ RingNumber& RingNumber::operator=(const RingNumber& other) {
 }
 
 // доступ по индексу
-char RingNumber::operator[](size_t index) const {
-    return digits_.at(index);
+char& RingNumber::operator[](size_t index) {
+    if (index >= digits_.size()) {
+        throw std::out_of_range("RingNumber index out of range");
+    }
+    return digits_[index];
 }
 
-char& RingNumber::operator[](size_t index) {
-    return digits_.at(index);
+// доступ по индексу
+char RingNumber::operator[](size_t index) const {
+    if (index >= digits_.size()) {
+        throw std::out_of_range("RingNumber index out of range");
+    }
+    return digits_[index];
 }
 
 char RingNumber::getDigit(size_t index) const {
-    return digits_.at(index);
+    if (index >= digits_.size()) {
+        return rules_.getZeroElement();  // За пределами = ноль
+    }
+    return digits_[index];
 }
 
 // преобразование в строку 

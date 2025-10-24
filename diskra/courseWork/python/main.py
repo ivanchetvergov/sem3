@@ -1,9 +1,11 @@
-from python.calculator import Calculator, load_variants
+# main.py
 import sys
+from python.calculator import Calculator, load_variants
+from typing import Dict, Any, List
 
 def show_menu():
     """Показывает меню выбора варианта."""
-    variants = load_variants()
+    variants: List[Dict[str, Any]] = load_variants()
     
     if not variants:
         print("Не удалось загрузить варианты из config.yaml")
@@ -18,7 +20,9 @@ def show_menu():
         symbols_str = ', '.join(var['symbols'][:6])
         if len(var['symbols']) > 6:
             symbols_str += ', ...'
-        print(f"  [{i}] {var['name']:12} | Z{var['size']:2} | Символы: {symbols_str}")
+        # Проверка, что size - это число, для избежания ошибок форматирования
+        size_str = str(var['size']) if var['size'] != '?' else '?'
+        print(f"  [{i}] {var['name']:12} | Z{size_str:2} | Символы: {symbols_str}")
     
     print(f"\n  [0] Выход")
     print("\n" + "="*60)
