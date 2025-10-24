@@ -14,7 +14,7 @@ public:
     char getZeroElement() const { return zero_; }
     char getOneElement() const { return one_; }
 
-    // * преобразования между символами и значениями
+    // * преобразования между символами и значениями (индексами)
     char getValueChar(int v) const { return values_.at(v % size_); }
     int  getCharValue(char c) const;
 
