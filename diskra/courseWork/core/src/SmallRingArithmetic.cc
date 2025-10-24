@@ -4,33 +4,33 @@
 
 char SmallRingArithmetic::add(char a, char b) const {
     // ? вариант через сложение индексов O(1)
-    // // получаем индексы символов
-    // int va = rules_.getCharValue(a);
-    // int vb = rules_.getCharValue(b);
-    // int n = rules_.getSize();
+    // получаем индексы символов
+    int va = rules_.getCharValue(a);
+    int vb = rules_.getCharValue(b);
+    int n = rules_.getSize();
     
-    // // Складываем индексы по модулю
-    // int result_index = (va + vb) % n;
+    // Складываем индексы по модулю
+    int result_index = (va + vb) % n;
     
-    // return rules_.getValueChar(result_index);
+    return rules_.getValueChar(result_index);
 
-    // ! вариант через последовательное + 1 O(N)
-    const char zero = rules_.getZeroElement();
-    const int vb = rules_.getCharValue(b); // сколько раз нужно прибавить 1
+    // // ! вариант через последовательное + 1 O(N)
+    // const char zero = rules_.getZeroElement();
+    // const int vb = rules_.getCharValue(b); // сколько раз нужно прибавить 1
     
-    if (b == zero) {
-        return a;
-    }
+    // if (b == zero) {
+    //     return a;
+    // }
     
-    char result = a;
+    // char result = a;
     
-    for (int i = 0; i < vb; ++i) {
-        int current_val = rules_.getCharValue(result);
-        int next_val = (current_val + 1) % rules_.getSize(); 
-        result = rules_.getValueChar(next_val);
-    }
+    // for (int i = 0; i < vb; ++i) {
+    //     int current_val = rules_.getCharValue(result);
+    //     int next_val = (current_val + 1) % rules_.getSize(); 
+    //     result = rules_.getValueChar(next_val);
+    // }
     
-    return result;
+    // return result;
 }
 
 char SmallRingArithmetic::findAdditiveInverse(char element) const {
