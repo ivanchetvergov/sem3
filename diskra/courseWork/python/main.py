@@ -20,8 +20,8 @@ def show_menu():
         symbols_str = ', '.join(var['symbols'][:6])
         if len(var['symbols']) > 6:
             symbols_str += ', ...'
-        # Проверка, что size - это число, для избежания ошибок форматирования
-        size_str = str(var['size']) if var['size'] != '?' else '?'
+            
+        size_str = str(var['size'])
         print(f"  [{i}] {var['name']:12} | Z{size_str:2} | Символы: {symbols_str}")
     
     print(f"\n  [0] Выход")

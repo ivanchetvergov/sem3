@@ -5,7 +5,7 @@ import yaml
 import re
 from typing import Dict, Any, List, Optional
 
-# Добавляем путь к C++ модулю
+# добавляем путь к C++ модулю
 sys.path.insert(0, 'build')
 try:
     from finite_ring_module import FiniteRingRules, SmallRingArithmetic, BigRingArithmetic, RingNumber # type: ignore
@@ -21,35 +21,26 @@ class Calculator:
     """
     MAX_DIGITS = 8 
     
-    def __init__(self, variant_name: str):
+    def __init__(self, variant_name: str) -> None:
         self._print_header(variant_name)
         
         try:
-            # 1. Инициализация правил
             self.rules = FiniteRingRules("config.yaml", variant_name)
-            
-            # 2. Инициализация движка малой арифметики (зависимость)
             self.small_engine = SmallRingArithmetic(self.rules)
-            
-            # 3. Инициализация главного движка большой арифметики
             self.engine = BigRingArithmetic(self.rules, self.small_engine)
             
-            # Получаем свойства кольца
             self.size: int = self.rules.getSize()
             self.zero: str = self.rules.getZeroElement()
             self.one: str = self.rules.getOneElement()
             
-            # Получаем все символы для валидации
             self.symbols: List[str] = [self.rules.getValueChar(i) for i in range(self.size)]
-            
             self._print_ring_info()
             
         except Exception as e:
             print(f"--- ОШИБКА инициализации: {e}")
-            print(f"Проверьте наличие файла 'config.yaml' и имя варианта '{variant_name}'.")
             sys.exit(1)
             
-    def _print_header(self, variant_name: str):
+    def _print_header(self, variant_name: str) -> None:
         """Выводит заголовок."""
         separator = f"{'='*50}"
         print(f"\n{separator}")
@@ -70,13 +61,13 @@ class Calculator:
         Парсит выражение, поддерживая унарный минус: A * -B, -A + B.
         Возвращает [op1_str, operator, op2_str] или None в случае ошибки.
         """
-        # Регулярное выражение для поиска: [возможно минус][число] [оператор] [возможно минус][число]
-        # Используем \s* для обработки пробелов
+        # регулярное выражение для поиска: [возможно минус][число] [оператор] [возможно минус][число]
+        # используем \s* для обработки пробелов
         pattern = r"^(-?\w+)\s*([+\-*/])\s*(-?\w+)$"
         match = re.match(pattern, expression.strip())
         
         if match:
-            # Возвращает op1 (включая минус), operator, op2 (включая минус)
+            # возвращает op1 operator op2
             return list(match.groups())
         
         return None
@@ -87,35 +78,31 @@ class Calculator:
         Возвращает строковый результат или сообщение об ошибке.
         """
         
-        # 1. Обработка унарного минуса (п. 8)
+        # * --- 1 обработка унарного минуса
         
-        # Парсинг op1
         is_neg_1 = op1_full.startswith('-')
         op1_str = op1_full.lstrip('-')
         
-        # Парсинг op2
         is_neg_2 = op2_full.startswith('-')
         op2_str = op2_full.lstrip('-')
 
-        # 2. Конвертируем в RingNumber
+        # * --- 2 Конвертируем в RingNumber
         try:
-            # C++ RingNumber теперь принимает только символы кольца
             num1 = RingNumber(self.rules, op1_str)
             num2 = RingNumber(self.rules, op2_str)
             
-            # 3. Применяем унарный минус через C++ движок
+            # * --- 3 Применяем унарный минус через C++ движок
             if is_neg_1:
-                num1 = self.engine.negate(num1)
+                num1 = num1.negate()
             if is_neg_2:
-                num2 = self.engine.negate(num2)
+                num2 = num2.negate()
 
         except RuntimeError as e:
-            # RingNumber бросает RuntimeError, если видит недопустимый символ (п. 6)
             return f"Ошибка ввода: {e}"
         except Exception as e:
             return f"Ошибка ввода (Непредвиденная): {e}"
 
-        # 4. Выполнение операции
+        # * --- 4 выполнение операции
         try:
             if operator == '+':
                 result_obj = self.engine.add(num1, num2)
@@ -126,14 +113,13 @@ class Calculator:
             elif operator == '/':
                 result_obj = self.engine.divide(num1, num2)
             else:
-                # На этот случай _parse_expression не должен допускать
                 return f"Ошибка: неизвестный оператор '{operator}'."
             
-            # 5. Конвертируем RingNumber обратно в строку для вывода
+            # * --- 5 конвертируем RingNumber обратно в строку для вывода
             return result_obj.toString()
             
         except RuntimeError as e:
-            # Перехватываем исключения C++ (деление на ноль, нет обратного)
+            # ! перехватываем исключения C++ 
             return f"Ошибка вычисления (RuntimeError): {e}"
         except Exception as e:
             return f"Ошибка вычисления: {e}"
@@ -165,13 +151,13 @@ class Calculator:
                 if not expression:
                     continue
                 
-                # --- Специальные команды ---
+                # * --- специальные команды ---
                 if expression.lower() in ['exit', 'quit', 'q']:
-                    print("\nДо свидания!\n")
+                    print("\nПрекращение работы программы...\n")
                     break
                 
                 if expression.lower() == '/rules':
-                    # Вызов метода C++ для вывода правил
+                    # вызов метода C++ для вывода правил
                     self.rules.printRules() 
                     continue
                     
@@ -179,7 +165,7 @@ class Calculator:
                     self._display_help()
                     continue
 
-                # --- Обработка ввода одного символа (индекса) ---
+                # * --- обработка ввода одного символа (индекса) ---
                 parts = expression.split()
                 if len(parts) == 1 and parts[0] not in ['/rules', '/help']:
                     sym = parts[0]
@@ -187,37 +173,36 @@ class Calculator:
                         idx = self.rules.getCharValue(sym)
                         print(f"  -> '{sym}' имеет индекс {idx}")
                     except RuntimeError:
-                        print(f"  → Ошибка: Символ '{sym}' не является элементом кольца.")
+                        print(f"  -> Ошибка: Символ '{sym}' не является элементом кольца.")
                     continue
                 
-                # --- Парсинг и вычисление выражения ---
+                # * --- парсинг и вычисление выражения ---
                 parsed = self._parse_expression(expression)
                 
                 if not parsed:
-                    print(f"  → Ошибка формата! Используйте: число оператор число (например, cab * -bac)")
+                    print(f"  -> Ошибка формата! Используйте: число оператор число (например, cab * -bac)")
                     continue
                 
                 op1_full, operator, op2_full = parsed
                 
-                # Вычисление
+                # * вычисление
                 result = self.calculate(op1_full, operator, op2_full)
                 
-                # Вывод результата
+                # * вывод результата
                 if not result.startswith("Ошибка"):
                     
-                    # ПРЕДУПРЕЖДЕНИЕ О ПЕРЕПОЛНЕНИИ (п. 5)
                     if len(result) > self.MAX_DIGITS:
-                        print(f"  → !!! ВНИМАНИЕ: Произошло переполнение (разрядность > {self.MAX_DIGITS}). Результат может быть некорректным.")
+                        print(f"  -> StackOverflow! результат свыше {self.MAX_DIGITS} разрядов.")
                     
-                    print(f"  → {op1_full} {operator} {op2_full} = {result}")
+                    print(f"  -> {op1_full} {operator} {op2_full} = {result}")
                 else:
-                    print(f"  → {result}")
+                    print(f"  -> {result}")
                     
             except KeyboardInterrupt:
-                print("\n\nПрервано пользователем. До свидания!\n")
+                print("\n\nПрервано пользователем. Программа завершает работу!\n")
                 break
             except Exception as e:
-                print(f"  → Неожиданная ошибка Python: {e}")
+                print(f"  -> Неожиданная ошибка Python: {e}")
                     
 def load_variants() -> List[Dict[str, Any]]:
     """
@@ -232,7 +217,6 @@ def load_variants() -> List[Dict[str, Any]]:
             config = yaml.safe_load(f) or {}
             variants: List[Dict[str, Any]] = []
             
-            # Безопасный обход структуры YAML
             for field_type, field_variants in config.get("variants", {}).items():
                 if isinstance(field_variants, dict):
                     for variant_name, variant_data in field_variants.items():
