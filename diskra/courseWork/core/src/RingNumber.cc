@@ -169,3 +169,31 @@ void RingNumber::validate() {
     }
 }
 
+RingNumber RingNumber::negate() const {
+    // * --- 1 cоздаем новое число
+    RingNumber result(rules_);
+
+    result.digits_.clear();
+    result.digits_.reserve(digits_.size());
+
+    // * 2 --- поразрядно вычисляем аддитивный инверс каждой цифры
+    for (char digit : digits_) {
+        int val = rules_.getCharValue(digit); 
+        int N = rules_.getSize();
+        
+        // * инверс
+        int negated_val;
+        if (val == 0) {
+            negated_val = 0;
+        } else {
+            negated_val = N - val; 
+        }
+
+        // * преобразуем обратно в символ и добавляем в результат
+        result.digits_.push_back(rules_.getValueChar(negated_val));
+    }
+
+    // * --- 3 нормализуем результат 
+    result.normalize(); 
+    return result;
+}

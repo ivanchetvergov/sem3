@@ -45,7 +45,8 @@ public:
     
     // * получить правила
     const FiniteRingRules& getRules() const { return rules_; }
-
+    
+    RingNumber negate() const;
 private:
     const FiniteRingRules& rules_;
     std::vector<char> digits_; 

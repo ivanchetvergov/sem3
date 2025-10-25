@@ -65,6 +65,7 @@ PYBIND11_MODULE(finite_ring_module, m) {
           .def(py::init<const FiniteRingRules&, const std::vector<char>&>(),
                py::arg("rules"), py::arg("value"))
           .def("length", &RingNumber::length)
+          .def("negate", &RingNumber::negate)
           .def("getDigit", &RingNumber::getDigit,
                py::arg("index"))
           .def("toString", &RingNumber::toString)
