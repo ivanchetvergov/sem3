@@ -18,7 +18,7 @@ protected:
     int size_;
 
     void SetUp() override {
-        rules_ = std::make_unique<FiniteRingRules>("../config.yaml", "variant_2");
+        rules_ = std::make_unique<FiniteRingRules>("../config.yaml", "variant_1");
         small_ = std::make_unique<SmallRingArithmetic>(*rules_);
         
         zero_ = rules_->getZeroElement();
@@ -29,7 +29,7 @@ protected:
             symbols_.push_back(rules_->getValueChar(i));
         }
         
-        std::cout << "\n--- Testing variant_2, size=" << size_ 
+        std::cout << "\n--- Testing variant_1, size=" << size_ 
                   << ", symbols: ";
         for (char c : symbols_) std::cout << c << " ";
         std::cout << "---" << std::endl;
@@ -285,10 +285,10 @@ TEST_F(SmallRingArithmeticTest, PlusOne_Rule) {
     std::cout << "    Plus-one rule: X+1 gives next element" << std::endl;
 }
 
-int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
+// int main(int argc, char** argv) {
+//     ::testing::InitGoogleTest(&argc, argv);
     
-    int result = RUN_ALL_TESTS();
+//     int result = RUN_ALL_TESTS();
 
-    return result;
-}
+//     return result;
+// }
