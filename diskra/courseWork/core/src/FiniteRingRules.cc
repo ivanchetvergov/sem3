@@ -113,12 +113,22 @@ void FiniteRingRules::init(const YAML::Node& variant_node) {
     values_.clear();        // контейнер значений
     char_to_val_.clear();   // мапа char -> int
     
-    for (int i = 0; i < size_; ++i){
-        int idx = (zero_position + i) % size_;  // считаем индекс в ориг последов.
-        char cur = seq[idx];                    // текущий символ
+    // * устанавливаем 0 и 1
+    values_.push_back(zero_);
+    char_to_val_[zero_] = 0;
 
-        values_.push_back(cur);
-        char_to_val_[cur] = i;
+    values_.push_back(one_);
+    char_to_val_[one_] = 1;
+
+    // * заполняем остальные элементы
+    int current_index = 2; // начинаем с индекса 2
+    for (char c : seq) {
+        // * берем элементы из исходной послед.
+        if (c != zero_ && c != one_) {
+            values_.push_back(c);
+            char_to_val_[c] = current_index;
+            current_index++;
+        }
     }
 }
 

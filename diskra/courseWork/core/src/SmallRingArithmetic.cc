@@ -86,6 +86,13 @@ char SmallRingArithmetic::multiply(char a, char b) const {
     if (a == zero || b == zero) {
         return zero;
     }
+    // умножение на единицу
+    if (b == rules_.getOneElement()) {
+        return a;
+    }
+    if (a == rules_.getOneElement()) {
+        return b;
+    }
     
     // получаем индекс второго операнда
     int vb = rules_.getCharValue(b);

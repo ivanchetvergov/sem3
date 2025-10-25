@@ -147,7 +147,7 @@ bool RingNumber::operator==(const RingNumber& other) const {
         return false;
     }
     
-    // chавниваем нормализованные версии
+    // cравниваем нормализованные версии
     RingNumber a(*this), b(other);
     a.normalize();
     b.normalize();
