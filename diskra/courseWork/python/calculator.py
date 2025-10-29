@@ -86,12 +86,12 @@ class Calculator:
         is_neg_2 = op2_full.startswith('-')
         op2_str = op2_full.lstrip('-')
 
-        # * --- 2 Конвертируем в RingNumber
+        # * --- 2 конвертируем в RingNumber
         try:
             num1 = RingNumber(self.rules, op1_str)
             num2 = RingNumber(self.rules, op2_str)
             
-            # * --- 3 Применяем унарный минус через C++ движок
+            # * --- 3 ырименяем унарный минус через C++ движок
             if is_neg_1:
                 num1 = num1.negate()
             if is_neg_2:

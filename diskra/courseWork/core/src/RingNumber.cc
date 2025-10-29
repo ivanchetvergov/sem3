@@ -40,12 +40,15 @@ RingNumber::RingNumber(const FiniteRingRules& rules, const string& value)
     normalize();
 }   
 
+// ! числа которые приходят в этот конструктор уже в нужном порядке
 RingNumber::RingNumber(const FiniteRingRules& rules, const vector<char>& value)
     : rules_(rules) {
     if (value.empty()) {
         throw runtime_error("Cannot create RingNumber from empty vector");
     }
     digits_ = value;
+    // std::reverse(digits_.begin(), digits_.end());
+
     normalize();
     validate();
 }  
@@ -83,7 +86,7 @@ char RingNumber::operator[](size_t index) const {
 
 char RingNumber::getDigit(size_t index) const {
     if (index >= digits_.size()) {
-        return rules_.getZeroElement();  // За пределами = ноль
+        return rules_.getZeroElement();  // за пределами = ноль
     }
     return digits_[index];
 }

@@ -34,4 +34,4 @@ variants:
       size: 11
       rule_plus_one: [b, c, k, g, d, a, j, i, e, f, h]
       zero_element: a
-      one_element: b
+      one_element: b 

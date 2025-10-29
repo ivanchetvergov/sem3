@@ -62,9 +62,9 @@ RingNumber BigRingArithmetic::subtract(const RingNumber& a, const RingNumber& b)
     std::vector<char> result_digits;
     result_digits.reserve(max_len);
 
-    int borrow = 0;
+    int borrow = 0; // заем
 
-    // идём от младших к старшим (0 → ...)
+    // идём от младших к старшим (0 -> ...)
     for (size_t i = 0; i < max_len; ++i) {
         int val_a = rules_.getCharValue(a.getDigit(i));
         int val_b = rules_.getCharValue(b.getDigit(i));
@@ -80,7 +80,7 @@ RingNumber BigRingArithmetic::subtract(const RingNumber& a, const RingNumber& b)
         result_digits.push_back(rules_.getValueChar(diff));
     }
 
-    // убираем ведущие нули (в конце, потому что младшие спереди)
+    // убираем ведущие нули в конце 
     while (result_digits.size() > 1 && result_digits.back() == zero) {
         result_digits.pop_back();
     }
@@ -117,10 +117,10 @@ bool isGreaterOrEqual(const RingNumber& a, const RingNumber& b,
     
     size_t len_a = a.length();
     size_t len_b = b.length();
-    
+                        
     // * --- 1 Сравнение по длине
     if (len_a != len_b) {
-        return len_a > len_b; // Более длинное число всегда больше
+        return len_a > len_b; // более длинное число всегда больше
     }
     
     // * --- 2 Длины равны, сравниваем поразрядно от старшего к младшему
@@ -169,12 +169,12 @@ RingNumber BigRingArithmetic::divide(const RingNumber& a, const RingNumber& b) c
     }
     
     RingNumber remainder = a;
-    RingNumber quotient(rules_); // Начинаем с нуля
+    RingNumber quotient(rules_); // начинаем с нуля
     RingNumber one(rules_, std::string(1, rules_.getOneElement())); 
     
     // * пока остаток >= делитель
     while (isGreaterOrEqual(remainder, b, rules_)) {
-        // вычитаем Делитель из Остатка
+        // вычитаем делитель из остатка
         remainder = subtract(remainder, b);
         // увеличиваем частное на 1
         quotient = add(quotient, one);
