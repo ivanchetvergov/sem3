@@ -50,48 +50,64 @@ RingNumber BigRingArithmetic::add(const RingNumber& a, const RingNumber& b) cons
     result.normalize();
     return result;
 }
+
 // TODO: написать тесты  !!!
 RingNumber BigRingArithmetic::subtract(const RingNumber& a, const RingNumber& b) const {
-    // --- 1  находим аддитивный инверс B
-    RingNumber negated_b = negate(b);
-    
-    // --- 2 возвращаем результат сложения A + (-B)
-    return add(a, negated_b);
+    return add(a, negate(b));
 }
 
 RingNumber BigRingArithmetic::subtractPositional(const RingNumber& a, const RingNumber& b) const {
     const char zero = rules_.getZeroElement();
-    int n = rules_.getSize();
+    const char one = rules_.getOneElement();
     
     size_t max_len = std::max(a.length(), b.length());
     std::vector<char> result_digits;
     result_digits.reserve(max_len);
     
-    int borrow = 0; // заём
+    char borrow = zero; // заём
     
     for (size_t i = 0; i < max_len; ++i) {
-        int val_a = (i < a.length()) ? rules_.getCharValue(a[i]) : 0;
-        int val_b = (i < b.length()) ? rules_.getCharValue(b[i]) : 0;
+        char digit_a = (i < a.length()) ? a[i] : zero;
+        char digit_b = (i < b.length()) ? b[i] : zero;
         
-        int diff = val_a - val_b - borrow;
-        
-        if (diff < 0) {
-            diff += n;
-            borrow = 1;
-        } else {
-            borrow = 0;
+        // * --- 1 вычитаем заём из digit_a
+        if (borrow == one) {
+            digit_a = small_.subtract(digit_a, one);
         }
         
-        result_digits.push_back(rules_.getValueChar(diff));
+        // * --- 2 проверяем: нужен ли новый заём?
+        bool need_borrow = isLessThan(digit_a, digit_b);
+        
+        // * --- 3 вычисляем разность
+        char diff;
+        if (need_borrow) {
+            // занимаем основание: добавляем N к digit_a
+            // N = полный круг кольца 
+            char increased_digit = digit_a;
+            char step = zero;
+            
+            do {
+                increased_digit = small_.plusOne(increased_digit);
+                step = small_.plusOne(step);
+            } while (step != zero);
+            
+            // теперь вычитаем
+            diff = small_.subtract(increased_digit, digit_b);
+            borrow = one;
+        } else {
+            // обычное вычитание
+            diff = small_.subtract(digit_a, digit_b);
+            borrow = zero;
+        }
+        
+        result_digits.push_back(diff);
     }
     
-    // Убираем ведущие нули
-    while (result_digits.size() > 1 && result_digits.back() == zero) {
-        result_digits.pop_back();
-    }
-    
-    return RingNumber(rules_, result_digits);
+    RingNumber result(rules_, result_digits);
+    result.normalize();
+    return result;
 }
+
 
 RingNumber BigRingArithmetic::multiply(const RingNumber& a, const RingNumber& b) const {
     const char zero = rules_.getZeroElement();
@@ -115,6 +131,26 @@ RingNumber BigRingArithmetic::multiply(const RingNumber& a, const RingNumber& b)
     return result;
 }
 
+bool isLessThan(char a, char b, const SmallRingArithmetic& small, const FiniteRingRules& rules) {
+    const char zero = rules.getZeroElement();
+    
+    if (a == b) return false;
+    
+    // идем от a, считая шаги до b
+    char current = a;
+    char counter = zero;
+    
+    while (current != b && current != zero) {
+        current = small.plusOne(current);
+        counter = small.plusOne(counter);
+        
+        // если вернулись к a — значит b недостижим, т.е. a > b
+        if (current == a) return false;
+    }
+    
+    // если дошли до b — значит a < b
+    return (current == b);
+}
 
 bool isGreaterOrEqual(const RingNumber& a, const RingNumber& b, 
                       const FiniteRingRules& rules) {
@@ -168,7 +204,7 @@ DivisionResult BigRingArithmetic::divide( const RingNumber& a, const RingNumber&
     int iteration = 0;
     
     // пока R >= B
-    while (isGreaterOrEqual(remainder, b, rules_)) {
+    while (isGreaterOrEqual(remainder, b)) {
         if (++iteration > MAX_ITERATIONS) {
             throw std::runtime_error(
                 "Division exceeded max iterations. "

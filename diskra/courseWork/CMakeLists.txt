@@ -22,6 +22,7 @@ set(CORE_SOURCES
     core/src/FiniteRingRules.cc
     core/src/SmallRingArithmetic.cc 
     core/src/BigRingArithmetic.cc
+        core/src/utils.cc
 )
 
 # модуль для python

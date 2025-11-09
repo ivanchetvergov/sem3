@@ -25,6 +25,6 @@ private:
     // * вспомогательные методы
     RingNumber multiplyByDigit(const RingNumber& num, char digit) const;
     RingNumber shiftLeft(const RingNumber& num, int positions) const;
-    friend bool isGreaterOrEqual(const RingNumber& a, const RingNumber& b, 
-                                 const FiniteRingRules& rules);
+    bool isGreaterOrEqual(const RingNumber& a, const RingNumber& b) const;
+    bool isLessThan(char a, char b) const;
 };
