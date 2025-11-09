@@ -42,7 +42,7 @@ char SmallRingArithmetic::add(char a, char b) const {
     // итерация b раз, используя char как счетчик
     while (counter != b) {
         result = plusOne(result);
-        counter = plusOne(counter); // Продвигаем счетчик
+        counter = plusOne(counter); //  продвигаем счетчик
     }
     return result;
 }
