@@ -18,7 +18,6 @@ public:
     char findAdditiveInverse(char element) const;
 
     char plusOne(char c) const;
-
 private:
     // ссылка на правила поля
     const FiniteRingRules& rules_;

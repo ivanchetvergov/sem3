@@ -8,7 +8,7 @@ from typing import Dict, Any, List, Optional
 # добавляем путь к C++ модулю
 sys.path.insert(0, 'build')
 try:
-    from finite_ring_module import FiniteRingRules, SmallRingArithmetic, BigRingArithmetic, RingNumber # type: ignore
+    from finite_ring_module import FiniteRingRules, SmallRingArithmetic, BigRingArithmetic, RingNumber, DivisionResult # type: ignore
 except ImportError:
     print("--- ОШИБКА: Не удалось импортировать 'с++ модуль'.")
     sys.exit(1)
@@ -23,6 +23,8 @@ class Calculator:
     
     def __init__(self, variant_name: str) -> None:
         self._print_header(variant_name)
+        # ! Хранит последний результат (RingNumber или DivisionResult)
+        self.last_result: Any = None 
         
         try:
             self.rules = FiniteRingRules("config.yaml", variant_name)
@@ -72,10 +74,10 @@ class Calculator:
         
         return None
 
-    def calculate(self, op1_full: str, operator: str, op2_full: str) -> str:
+    def calculate(self, op1_full: str, operator: str, op2_full: str) -> Any: # ! Изменен тип возвращаемого значения
         """
         Обрабатывает унарный минус и выполняет вычисление.
-        Возвращает строковый результат или сообщение об ошибке.
+        Возвращает объект (RingNumber или DivisionResult) или сообщение об ошибке.
         """
         
         # * --- 1 обработка унарного минуса
@@ -91,19 +93,22 @@ class Calculator:
             num1 = RingNumber(self.rules, op1_str)
             num2 = RingNumber(self.rules, op2_str)
             
-            # * --- 3 ырименяем унарный минус через C++ движок
+            # * --- 3 применяем унарный минус через C++ движок
             if is_neg_1:
-                num1 = num1.negate()
+                num1 = self.engine.negate(num1)
             if is_neg_2:
-                num2 = num2.negate()
+                num2 = self.engine.negate(num2)
 
         except RuntimeError as e:
+            # ! Возвращаем строку ошибки, если ввод невалиден
             return f"Ошибка ввода: {e}"
         except Exception as e:
             return f"Ошибка ввода (Непредвиденная): {e}"
 
         # * --- 4 выполнение операции
         try:
+            result_obj: Any
+            
             if operator == '+':
                 result_obj = self.engine.add(num1, num2)
             elif operator == '-':
@@ -111,15 +116,18 @@ class Calculator:
             elif operator == '*':
                 result_obj = self.engine.multiply(num1, num2)
             elif operator == '/':
+                # ! Деление: возвращает структуру DivisionResult
                 result_obj = self.engine.divide(num1, num2)
             else:
                 return f"Ошибка: неизвестный оператор '{operator}'."
             
-            # * --- 5 конвертируем RingNumber обратно в строку для вывода
-            return result_obj.toString()
+            # ! Сохраняем полный объект для доступа через точку в интерактивном режиме
+            self.last_result = result_obj 
+            
+            return result_obj # ! Возвращаем объект (RingNumber или DivisionResult)
             
         except RuntimeError as e:
-            # ! перехватываем исключения C++ 
+            # ! перехватываем исключения C++ и возвращаем строку ошибки
             return f"Ошибка вычисления (RuntimeError): {e}"
         except Exception as e:
             return f"Ошибка вычисления: {e}"
@@ -157,7 +165,6 @@ class Calculator:
                     break
                 
                 if expression.lower() == '/rules':
-                    # вызов метода C++ для вывода правил
                     self.rules.printRules() 
                     continue
                     
@@ -185,18 +192,36 @@ class Calculator:
                 
                 op1_full, operator, op2_full = parsed
                 
-                # * вычисление
-                result = self.calculate(op1_full, operator, op2_full)
+                # * вычисление (возвращает объект или строку ошибки)
+                result_obj = self.calculate(op1_full, operator, op2_full)
                 
-                # * вывод результата
-                if not result.startswith("Ошибка"):
+                # * --- обработка ошибок ---
+                if isinstance(result_obj, str) and result_obj.startswith("Ошибка"):
+                    print(f"  -> {result_obj}")
+                    continue
+                
+                # * --- вывод результата ---
+                
+                # Если результат - DivisionResult
+                if isinstance(result_obj, DivisionResult):
+                    quotient_str = result_obj.quotient.toString()
+                    remainder_str = result_obj.remainder.toString()
                     
-                    if len(result) > self.MAX_DIGITS:
-                        print(f"  -> StackOverflow! результат свыше {self.MAX_DIGITS} разрядов.")
+                    if len(quotient_str) > self.MAX_DIGITS:
+                        print(f"  -> StackOverflow! Частное свыше {self.MAX_DIGITS} разрядов.")
                     
-                    print(f"  -> {op1_full} {operator} {op2_full} = {result}")
-                else:
-                    print(f"  -> {result}")
+                    print(f"  -> {op1_full} {operator} {op2_full}")
+                    print(f"  -> Частное (Q) = {quotient_str}")
+                    print(f"  -> Остаток (R) = {remainder_str}")
+                
+                # Если результат - RingNumber (для +, -, *)
+                else: 
+                    result_str = result_obj.toString()
+
+                    if len(result_str) > self.MAX_DIGITS:
+                        print(f"  -> StackOverflow! Результат свыше {self.MAX_DIGITS} разрядов.")
+
+                    print(f"  -> {op1_full} {operator} {op2_full} = {result_str}")
                     
             except KeyboardInterrupt:
                 print("\n\nПрервано пользователем. Программа завершает работу!\n")

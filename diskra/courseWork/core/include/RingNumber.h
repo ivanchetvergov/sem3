@@ -38,6 +38,10 @@ public:
     // * проверки
     bool isZero() const;
     bool isValid() const;
+
+    // * свойства многочлена
+    size_t degree() const;
+    char leadingCoefficient() const;
     
     // * операторы сравнения
     bool operator==(const RingNumber& other) const;
@@ -46,7 +50,6 @@ public:
     // * получить правила
     const FiniteRingRules& getRules() const { return rules_; }
     
-    RingNumber negate() const;
 private:
     const FiniteRingRules& rules_;
     std::vector<char> digits_; 

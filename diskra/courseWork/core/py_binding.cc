@@ -5,6 +5,7 @@
 #include "SmallRingArithmetic.h"
 #include "BigRingArithmetic.h"
 #include "RingNumber.h"
+#include "DivisionResult.h"
 
 namespace py = pybind11;
 
@@ -54,7 +55,8 @@ PYBIND11_MODULE(finite_ring_module, m) {
           .def("multiply", &BigRingArithmetic::multiply,
                py::arg("a"), py::arg("b"))
           .def("divide", &BigRingArithmetic::divide,
-               py::arg("a"), py::arg("b"));
+               py::arg("a"), py::arg("b"))
+          .def("negate", &BigRingArithmetic::negate);
     
      // * --- RingNumber * ---
      py::class_<RingNumber>(m, "RingNumber")
@@ -65,7 +67,6 @@ PYBIND11_MODULE(finite_ring_module, m) {
           .def(py::init<const FiniteRingRules&, const std::vector<char>&>(),
                py::arg("rules"), py::arg("value"))
           .def("length", &RingNumber::length)
-          .def("negate", &RingNumber::negate)
           .def("getDigit", &RingNumber::getDigit,
                py::arg("index"))
           .def("toString", &RingNumber::toString)
@@ -78,4 +79,13 @@ PYBIND11_MODULE(finite_ring_module, m) {
           .def("__repr__", [](const RingNumber& n) {
             return "RingNumber('" + n.toString() + "')";
         });
+     
+     // * --- DivisionResult ---
+     py::class_<DivisionResult>(m, "DivisionResult")
+          .def(py::init<const RingNumber&, const RingNumber&>(),
+               py::arg("quotient"), py::arg("remainder"))
+          .def_readonly("quotient", &DivisionResult::quotient) 
+          .def_readonly("remainder", &DivisionResult::remainder)
+          .def("toString", &DivisionResult::toString);
+        
 }
