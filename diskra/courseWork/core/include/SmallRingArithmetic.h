@@ -17,7 +17,9 @@ public:
     char findMultiplicativeInverse(char element) const;
     char findAdditiveInverse(char element) const;
 
+    char plusOne(char c) const;
+
 private:
-    //  ссылка на правила поля
+    // ссылка на правила поля
     const FiniteRingRules& rules_;
 };

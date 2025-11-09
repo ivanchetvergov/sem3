@@ -22,7 +22,8 @@ public:
     bool isValidChar(char c) const;
 
     void printRules() const;
-
+    const std::vector<char>& getOrderedValues() const;
+    
 private:
     void init(const YAML::Node& variant_node);
 

@@ -146,6 +146,10 @@ void FiniteRingRules::init(const YAML::Node& variant_node) {
     cerr << "---------------------=\n" << endl;
 #endif
 
+const std::vector<char>& FiniteRingRules::getOrderedValues() const {
+    return values_; 
+}
+
 int FiniteRingRules::getCharValue(char c) const {
     auto it = char_to_val_.find(c);
     

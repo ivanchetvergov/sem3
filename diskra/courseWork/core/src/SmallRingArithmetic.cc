@@ -1,61 +1,52 @@
 // core/src/SmallRingArithmetic.cc
 #include "SmallRingArithmetic.h"
 #include <stdexcept>
+#include <stack>
+#include <utility>
+
+char SmallRingArithmetic::plusOne(char c) const {
+    // 1. получаем упорядоченный список символов кольца
+    const std::vector<char>& values = rules_.getOrderedValues(); 
+    
+    // 2. находим позицию текущего символа c (O(N) )
+    auto it = std::find(values.begin(), values.end(), c);
+
+    // проверка на ошибку
+    if (it == values.end()) {
+        throw std::runtime_error("Invalid ring character found.");
+    }
+
+    // 3. продвигаем итератор на одну позицию
+    auto next_it = std::next(it);
+
+    // 4. проверка цикличности: если достигли конца, возвращаемся к началу
+    if (next_it == values.end()) {
+        // циклический переход с N-1 на 0
+        return values.front();
+    }
+
+    // 5. возвращаем следующий элемент
+    return *next_it;
+}
 
 char SmallRingArithmetic::add(char a, char b) const {
-    // ? вариант через сложение индексов O(1)
-    // // получаем индексы символов
-    // int va = rules_.getCharValue(a);
-    // int vb = rules_.getCharValue(b);
-    // int n = rules_.getSize();
-    
-    // // Складываем индексы по модулю
-    // int result_index = (va + vb) % n;
-    
-    // return rules_.getValueChar(result_index);
-
-    // ! вариант через последовательное + 1 O(N)
     const char zero = rules_.getZeroElement();
-    // const int vb = rules_.getCharValue(b); // сколько раз нужно прибавить 1
-    auto vb_it = std::find(values_.begin(), values_.end(), a);
-    if (vb_it != values_.end()) continue;
     
     if (b == zero) {
         return a;
     }
-    // TODO: стек сделать под симвоголы !!! чтобы реализовать арифметику 
+
+    char counter = zero;
     char result = a;
     
-    for (int i = 0; i < vb; ++i) {
-        int current_val = rules_.getCharValue(result);
-        int next_val = (current_val + 1) % rules_.getSize(); 
-        result = rules_.getValueChar(next_val);
+    // итерация b раз, используя char как счетчик
+    while (counter != b) {
+        result = plusOne(result);
+        counter = plusOne(counter); // Продвигаем счетчик
     }
-    
     return result;
 }
 
-char SmallRingArithmetic::findAdditiveInverse(char element) const {
-    const char zero = rules_.getZeroElement();
-    
-    // ноль обратен сам себе
-    if (element == zero) {
-        return zero;
-    }
-    
-    // ием x такой что add(element, x) = zero
-    const int size = rules_.getSize();
-    
-    for (int i = 0; i < size; ++i) {
-        char candidate = rules_.getValueChar(i);
-        if (add(element, candidate) == zero) { 
-            return candidate;
-        }
-    }
-    
-    throw std::runtime_error("Additive inverse not found for element: " + 
-                           std::string(1, element));
-}
 
 char SmallRingArithmetic::subtract(char a, char b) const {
     // ? вариант разницы индексов O(1)
@@ -74,34 +65,21 @@ char SmallRingArithmetic::subtract(char a, char b) const {
 }
 
 char SmallRingArithmetic::multiply(char a, char b) const {
-    
-    // ? умножаем индексы по модулю N (O(1) операция)
-    // long long product_val = (long long)va * vb;
-    // int result_index = product_val % n;
-    
-    // return rules_.getValueChar(result_index);
-
-    // ! умножение через повторное сложение O(N^2)
     const char zero = rules_.getZeroElement();
+    const char one = rules_.getOneElement();
     
-    // умножение на ноль
-    if (a == zero || b == zero) {
-        return zero;
-    }
-    // умножение на единицу
-    if (b == rules_.getOneElement()) {
-        return a;
-    }
-    if (a == rules_.getOneElement()) {
-        return b;
-    }
+    if (a == zero || b == zero) return zero;
     
-    // получаем индекс второго операнда
-    int vb = rules_.getCharValue(b);
-    
+    // используем b как счетчик, уменьшая его до нуля.
     char result = zero;
-    for (int i = 0; i < vb; ++i) {
-        result = add(result, a);
+    char counter = b;
+    
+    while (counter != zero) {
+        // result = result + a
+        result = add(result, a); 
+        
+        // counter = counter - 1
+        counter = subtract(counter, one); 
     }
     
     return result;
@@ -118,6 +96,32 @@ char SmallRingArithmetic::divide(char a, char b) const {
     // находим обратный элемент
     char inv = findMultiplicativeInverse(b);
     return multiply(a, inv);
+}
+
+char SmallRingArithmetic::findAdditiveInverse(char element) const {
+    const char zero = rules_.getZeroElement();
+    
+    if (element == zero) {
+        return zero;
+    }
+    
+    // ищем x такой что add(element, x) = zero
+    // начинаем с x = 1 и прибавляем 1, пока сумма не станет 0.
+    char candidate = plusOne(zero); // начинаем с 1
+    char sum = element;
+
+    while (sum != zero) {
+        // O(1) шаг: прибавляем 1 к сумме и 1 к кандидату
+        sum = plusOne(sum);
+        candidate = plusOne(candidate); 
+
+        // если прошли полный круг
+        if (candidate == zero) {
+             throw std::runtime_error("Additive inverse logic error");
+        }
+    }
+    
+    return candidate;
 }
 
 char SmallRingArithmetic::findMultiplicativeInverse(char element) const {
