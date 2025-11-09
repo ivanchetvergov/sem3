@@ -16,6 +16,7 @@ public:
     DivisionResult divide(const RingNumber& a, const RingNumber& b) const;
 
     RingNumber negate(const RingNumber& a) const;
+    RingNumber subtractPositional(const RingNumber& a, const RingNumber& b) const;
 
 private:
     const FiniteRingRules& rules_;

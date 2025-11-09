@@ -58,6 +58,41 @@ RingNumber BigRingArithmetic::subtract(const RingNumber& a, const RingNumber& b)
     // --- 2 возвращаем результат сложения A + (-B)
     return add(a, negated_b);
 }
+
+RingNumber BigRingArithmetic::subtractPositional(const RingNumber& a, const RingNumber& b) const {
+    const char zero = rules_.getZeroElement();
+    int n = rules_.getSize();
+    
+    size_t max_len = std::max(a.length(), b.length());
+    std::vector<char> result_digits;
+    result_digits.reserve(max_len);
+    
+    int borrow = 0; // заём
+    
+    for (size_t i = 0; i < max_len; ++i) {
+        int val_a = (i < a.length()) ? rules_.getCharValue(a[i]) : 0;
+        int val_b = (i < b.length()) ? rules_.getCharValue(b[i]) : 0;
+        
+        int diff = val_a - val_b - borrow;
+        
+        if (diff < 0) {
+            diff += n;
+            borrow = 1;
+        } else {
+            borrow = 0;
+        }
+        
+        result_digits.push_back(rules_.getValueChar(diff));
+    }
+    
+    // Убираем ведущие нули
+    while (result_digits.size() > 1 && result_digits.back() == zero) {
+        result_digits.pop_back();
+    }
+    
+    return RingNumber(rules_, result_digits);
+}
+
 RingNumber BigRingArithmetic::multiply(const RingNumber& a, const RingNumber& b) const {
     const char zero = rules_.getZeroElement();
     
@@ -80,21 +115,28 @@ RingNumber BigRingArithmetic::multiply(const RingNumber& a, const RingNumber& b)
     return result;
 }
 
+
 bool isGreaterOrEqual(const RingNumber& a, const RingNumber& b, 
                       const FiniteRingRules& rules) {
     
-    size_t len_a = a.length();
-    size_t len_b = b.length();
+    // нормализуем оба числа (удаляем ведущие нули)
+    RingNumber a_norm = a;
+    RingNumber b_norm = b;
+    a_norm.normalize();
+    b_norm.normalize();
+    
+    size_t len_a = a_norm.length();
+    size_t len_b = b_norm.length();
                         
-    // * --- 1 cравнение по длине
+    // 1. сравнение по длине (больше цифр = больше число)
     if (len_a != len_b) {
-        return len_a > len_b; // более длинное число всегда больше
+        return len_a > len_b;
     }
     
-    // * --- 2 длины равны, сравниваем поразрядно от старшего к младшему
-    for (size_t i = len_a; i > 0; --i) {
-        char digit_a = a.getDigit(i - 1); // старший разряд находится по индексу i-1
-        char digit_b = b.getDigit(i - 1);
+    // 2. Длины равны → сравниваем поразрядно от СТАРШЕГО к младшему
+    for (int i = len_a - 1; i >= 0; --i) {
+        char digit_a = a_norm[i];  // старший разряд
+        char digit_b = b_norm[i];
         
         int val_a = rules.getCharValue(digit_a);
         int val_b = rules.getCharValue(digit_b);
@@ -103,84 +145,48 @@ bool isGreaterOrEqual(const RingNumber& a, const RingNumber& b,
             return val_a > val_b;
         }
     }
-    return true; // числа равны
+    
+    return true;
 }
 
 // TODO: реализовать остаток
-DivisionResult BigRingArithmetic::divide(const RingNumber& a, const RingNumber& b) const {
+DivisionResult BigRingArithmetic::divide( const RingNumber& a, const RingNumber& b) const {
     if (b.isZero()) {
-        throw std::runtime_error("Division by zero in BigRingArithmetic");
+        throw std::runtime_error("Division by zero");
     }
-
-    // * --- 1. ПРОВЕРКА ОБРАТИМОСТИ СТАРШЕГО КОЭФФИЦИЕНТА
-    // Деление многочленов (BigRingNumber) возможно только, если LC делителя обратим.
-    char lc_b = b.leadingCoefficient();
-    char lc_b_inv;
-    try {
-        lc_b_inv = small_.findMultiplicativeInverse(lc_b);
-    } catch (const std::runtime_error&) {
-        // Это ловит делители нуля, такие как 'c' (2) или 'g' (4) в Z8.
-        throw std::runtime_error(
-            "Division failed: Leading coefficient of divisor is not invertible (zero divisor)."
-        );
-    }
-
-    // Если делимое меньше делителя, частное 0, остаток A.
-    if (a.degree() < b.degree()) {
-        return {RingNumber(rules_), a};
-    }
-
-    RingNumber quotient(rules_);
-    RingNumber remainder = a;
     
     const char zero = rules_.getZeroElement();
-
-    // * --- 2. АЛГОРИТМ ДЛИННОГО ДЕЛЕНИЯ (LONG DIVISION)
+    const char one = rules_.getOneElement();
     
-    // Цикл работает, пока остаток R больше или равен степени делителя B
-    while (remainder.degree() >= b.degree() && !remainder.isZero()) {
-        
-        size_t degree_r = remainder.degree();
-        size_t degree_b = b.degree();
-        size_t k = degree_r - degree_b; // Степень сдвига (x^k)
-
-        char lc_r = remainder.leadingCoefficient();
-        
-        // --- 2.1 Находим частное текущих старших коэффициентов: q_k = LC(R) / LC(B)
-        // Деление равно умножению на обратный элемент: q_k = LC(R) * LC(B)^(-1)
-        char q_k = small_.multiply(lc_r, lc_b_inv); 
-        
-        // --- 2.2 Формируем одночлен для вычитания: q_k * B * x^k
-        RingNumber term = multiplyByDigit(b, q_k); // q_k * B
-        term = shiftLeft(term, k); // (q_k * B) * x^k
-
-        // --- 2.3 Вычитаем: R = R - term
-        remainder = subtract(remainder, term);
-        
-        // --- 2.4 Добавляем q_k * x^k к частному
-        
-        // Создаем частное-одночлен с коэффициентом q_k и сдвигом k
-        std::vector<char> q_k_digits(k + 1, zero);
-        q_k_digits[k] = q_k; 
-        
-        RingNumber q_k_term(rules_, q_k_digits);
-        
-        // Складываем с общим частным
-        quotient = add(quotient, q_k_term);
-        
-        // Нормализация остатка (важно, чтобы степень была пересчитана)
-        remainder.normalize();
-        
-        // Если вычитание не уменьшило степень, это ошибка в логике сложения/вычитания
-        if (degree_r == remainder.degree() && !remainder.isZero()) {
-             // Предотвращение бесконечного цикла
-             throw std::runtime_error("Division internal error: Subtraction did not reduce remainder degree.");
+    RingNumber quotient(rules_);  // Q = 0
+    RingNumber remainder = a;     // R = A
+    
+    RingNumber one_num(rules_, std::string(1, one));
+    
+    // защита от бесконечного цикла
+    const int MAX_ITERATIONS = 10000;
+    int iteration = 0;
+    
+    // пока R >= B
+    while (isGreaterOrEqual(remainder, b, rules_)) {
+        if (++iteration > MAX_ITERATIONS) {
+            throw std::runtime_error(
+                "Division exceeded max iterations. "
+                "R=" + remainder.toString() + 
+                ", B=" + b.toString()
+            );
         }
+        
+        // КРИТИЧНО: используем позиционное вычитание, а не кольцевое!
+        remainder = subtractPositional(remainder, b);
+        
+        // Q = Q + 1 (используем кольцевое сложение)
+        quotient = add(quotient, one_num);
     }
     
-    // ! возвращаем результат
     return DivisionResult(quotient, remainder);
 }
+
 
 RingNumber BigRingArithmetic::multiplyByDigit(const RingNumber& num, char digit) const {
     const char zero = rules_.getZeroElement();
