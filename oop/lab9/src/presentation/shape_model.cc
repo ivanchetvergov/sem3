@@ -10,7 +10,8 @@ ShapeModel::ShapeModel(std::shared_ptr<infrastructure::ShapeRepository> reposito
     
     // Подключаем сигналы репозитория
     m_repository->shapeAdded.connect([this](int id) { onShapeAdded(id); });
-    m_repository->shapeRemoved.connect([this](int id) { onShapeRemoved(id); });
+    // ! решение проблемы с SIGIT. автоматический сигнал вызывает вложенный вызов
+    // m_repository->shapeRemoved.connect([this](int id) { onShapeRemoved(id); });
     
     refresh();
 }
@@ -86,6 +87,24 @@ bool ShapeModel::removeRow(int row, const QModelIndex& parent) {
     
     const int shapeId = m_filteredShapes[row].id;
 
+    // 1. Сначала удаляем из БД, чтобы убедиться в успехе
+    bool success = m_repository->remove(shapeId);
+    
+    if (success) {
+        // ! 2. ВРУЧНУЮ ПОДАЕМ СИГНАЛ (вызываем полную перезагрузку модели)
+        onShapeRemoved(shapeId);
+    }
+    return success;
+}
+
+/*
+bool ShapeModel::removeRow(int row, const QModelIndex& parent) {
+    if (parent.isValid() || row < 0 || row >= static_cast<int>(m_filteredShapes.size())) {
+        return false;
+    }
+    
+    const int shapeId = m_filteredShapes[row].id;
+
     // ! блокируем сигналы, чтобы не триггерить onShapeRemoved()
     // избегаем SIGIT
     QSignalBlocker blocker(m_repository.get());
@@ -123,6 +142,7 @@ bool ShapeModel::removeRow(int row, const QModelIndex& parent) {
 
     return success;
 }
+*/
 
 void ShapeModel::refresh() {
     beginResetModel();
@@ -162,7 +182,7 @@ domain::ShapeData ShapeModel::getShapeData(int row) const {
 }
 
 void ShapeModel::onShapeAdded([[maybe_unused]] int id) {
-    // Полная перезагрузка данных для избежания проблем с итераторами
+    // полная перезагрузка данных для избежания проблем с итераторами
     beginResetModel();
     m_shapes = m_repository->findAll();
     m_typeCounts = m_repository->countByType();
@@ -172,7 +192,7 @@ void ShapeModel::onShapeAdded([[maybe_unused]] int id) {
 }
 
 void ShapeModel::onShapeRemoved([[maybe_unused]] int id) {
-    // Полная перезагрузка данных для избежания проблем с итераторами
+    // полная перезагрузка данных для избежания проблем с итераторами
     beginResetModel();
     m_shapes = m_repository->findAll();
     m_typeCounts = m_repository->countByType();

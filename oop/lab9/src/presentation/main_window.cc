@@ -8,6 +8,7 @@
 #include <QToolBar>
 #include <QStatusBar>
 #include <QHeaderView>
+#include <QRandomGenerator>
 
 namespace presentation {
 
@@ -154,9 +155,9 @@ void MainWindow::createToolbar() {
     connect(removeBtn, &QPushButton::clicked, this, &MainWindow::onRemoveShapeClicked);
     toolbar->addWidget(removeBtn);
     
-    // auto* refreshBtn = new QPushButton("Refresh", this);
-    // connect(refreshBtn, &QPushButton::clicked, this, &MainWindow::onRefreshClicked);
-    // toolbar->addWidget(refreshBtn);
+    auto* refreshBtn = new QPushButton("Refresh", this);
+    connect(refreshBtn, &QPushButton::clicked, this, &MainWindow::onRefreshClicked);
+    toolbar->addWidget(refreshBtn);
 }
 
 void MainWindow::setupConnections() {
@@ -186,6 +187,14 @@ void MainWindow::setupConnections() {
 void MainWindow::onAddShapeClicked() {
     auto type = static_cast<domain::ShapeType>(m_shapeTypeCombo->currentData().toInt());
     
+    auto* generator = QRandomGenerator::global();
+    qreal randX = generator->bounded(-450, 551);
+    qreal randY = generator->bounded(-250, 151);
+        
+    // обновляем спин-боксы новым значением
+    m_xPosSpin->setValue(qRound(randX));
+    m_yPosSpin->setValue(qRound(randY));
+
     auto shapeData = domain::ShapeFactory::createDefaultShapeData(
         type, 
         QPointF(m_xPosSpin->value(), m_yPosSpin->value())
@@ -224,7 +233,19 @@ void MainWindow::onRemoveShapeClicked() {
 
         if (m_shapeModel->removeRow(row)) {
             statusBar()->showMessage("Фигура удалена", 3000);
-            updateGraphicsView();
+            updateGraphicsView(); 
+            m_tableView->selectionModel()->clearSelection();
+
+            if (m_shapeModel->rowCount() > 0) {
+                // выбираем новую строку на месте удаленной или последнюю
+                int newRow = std::min(row, m_shapeModel->rowCount() - 1);
+                
+                QModelIndex newIndex = m_shapeModel->index(newRow, 0);
+                m_tableView->setCurrentIndex(newIndex);
+                m_tableView->selectionModel()->select(
+                    newIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows
+                );
+            }
         } else {
             QMessageBox::warning(this, "Ошибка", "Не удалось удалить фигуру");
         }
