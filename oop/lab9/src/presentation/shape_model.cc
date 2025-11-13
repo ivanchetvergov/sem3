@@ -49,10 +49,10 @@ QVariant ShapeModel::data(const QModelIndex& index, int role) const {
                 return getConnectionsString(shape.connectedShapeIds);
         }
     } else if (role == Qt::UserRole) {
-        // Для делегата: количество фигур данного типа
+        // для делегата: количество фигур данного типа
         return getCountForType(shape.type);
     } else if (role == Qt::UserRole + 1) {
-        // Тип фигуры
+        // тип фигуры
         return static_cast<int>(shape.type);
     }
     
@@ -87,7 +87,7 @@ bool ShapeModel::removeRow(int row, const QModelIndex& parent) {
     
     const int shapeId = m_filteredShapes[row].id;
 
-    // 1. Сначала удаляем из БД, чтобы убедиться в успехе
+    // 1. сначала удаляем из БД, чтобы убедиться в успехе
     bool success = m_repository->remove(shapeId);
     
     if (success) {
@@ -182,7 +182,6 @@ domain::ShapeData ShapeModel::getShapeData(int row) const {
 }
 
 void ShapeModel::onShapeAdded([[maybe_unused]] int id) {
-    // полная перезагрузка данных для избежания проблем с итераторами
     beginResetModel();
     m_shapes = m_repository->findAll();
     m_typeCounts = m_repository->countByType();
@@ -192,7 +191,6 @@ void ShapeModel::onShapeAdded([[maybe_unused]] int id) {
 }
 
 void ShapeModel::onShapeRemoved([[maybe_unused]] int id) {
-    // полная перезагрузка данных для избежания проблем с итераторами
     beginResetModel();
     m_shapes = m_repository->findAll();
     m_typeCounts = m_repository->countByType();

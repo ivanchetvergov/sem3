@@ -75,6 +75,7 @@ bool DatabaseManager::createTables() {
     }
     
     // включаем поддержку внешних ключей
+    // (по умолчанию, SQLite игнорирует ограничения внешних ключей)
     query.exec("PRAGMA foreign_keys = ON");
     
     return true;

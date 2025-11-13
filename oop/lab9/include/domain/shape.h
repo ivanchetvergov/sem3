@@ -38,6 +38,7 @@ public:
     void addConnection(int shapeId);
     void removeConnection(int shapeId);
 
+    // абстрактные методы
     virtual void draw(QPainter& painter) const = 0;
     virtual QRectF boundingRect() const = 0;
 

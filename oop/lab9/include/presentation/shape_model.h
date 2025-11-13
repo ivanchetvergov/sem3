@@ -46,7 +46,7 @@ signals:
     void shapeVisibilityChanged();
 
 private slots:
-    void onShapeAdded(int id);   // обработка добавления фигуры в репозиторий
+    void (int id);   // обработка добавления фигуры в репозиторий
     void onShapeRemoved(int id); // обработка удаления фигуры из репозитория
 
 private:
@@ -63,11 +63,11 @@ private:
     // является основным источником данных для модели (кэш)
     std::vector<domain::ShapeData> m_shapes;
     
-    // список фигур, отфильтрованный на основе m_hiddenTypes.
+    // список фигур, отфильтрованный на основе m_hiddenTypes
     // этот список используется для отображения в QTableView.
     std::vector<domain::ShapeData> m_filteredShapes;
     
-    // набор типов фигур (ShapeType), которые должны быть скрыты в таблиц.
+    // набор типов фигур (ShapeType), которые должны быть скрыты в таблиц
     QSet<domain::ShapeType> m_hiddenTypes;
 
     // мапа формата: {ShapeType::RECTANGLE: 15, ShapeType::ELLIPSE: 7, ...}

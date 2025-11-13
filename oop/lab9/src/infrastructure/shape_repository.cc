@@ -78,7 +78,7 @@ bool ShapeRepository::update(const domain::ShapeData& data) {
     }
 
     // * отправляем сигнал
-    shapeUpdated(data.id);
+    // shapeUpdated(data.id);
 
     return true;
 }
@@ -110,9 +110,7 @@ bool ShapeRepository::remove(int shapeId) {
     shapeRemoved(shapeId);
 
     // уведомляем фигуры, чьи связи изменились
-    for (int id : affectedIds) {
-        connectionsChanged(id);
-    }
+    // shapeUpdated
     return true;
 }
 
@@ -137,7 +135,7 @@ bool ShapeRepository::updatePosition(int shapeId, const QPointF& position) {
     }
 
     // * отправляем сигнал
-    shapeUpdated(shapeId); 
+    // shapeUpdated(shapeId); 
 
     return true;
 }

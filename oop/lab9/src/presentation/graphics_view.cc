@@ -26,7 +26,7 @@ GraphicsView::GraphicsView(std::shared_ptr<infrastructure::ShapeRepository> repo
     // разрешаем перетаскивание холста
     setDragMode(QGraphicsView::NoDrag);
     
-    // подключаем сигналы репозитория
+    // подключаем сигналы репозитория (подписка на сигналы Boost)
     m_repository->shapeAdded.connect([this](int id) { onShapeAdded(id); });
     m_repository->shapeRemoved.connect([this](int id) { onShapeRemoved(id); });
     
@@ -65,7 +65,7 @@ void GraphicsView::drawBackground(QPainter* painter, const QRectF& rect) {
     QGraphicsView::drawBackground(painter, rect);
     
     // рисуем сетку
-    painter->setPen(QPen(QColor(220, 220, 220), 1));
+    painter->setPen(QPen(QColor(220, 220, 220), 0.8));
     
     const int gridSize = 50;
     int left = static_cast<int>(rect.left()) - (static_cast<int>(rect.left()) % gridSize);
@@ -93,7 +93,7 @@ void GraphicsView::drawForeground(QPainter* painter, const QRectF& rect) {
     // затем рисуем все фигуры
     for (const auto& [id, shape] : m_shapes) {
         if (!shape || !shape->isVisible()) {
-            continue; // Пропускаем невидимые фигуры
+            continue; // пропускаем невидимые фигуры
         }
         
         // подсвечиваем перетаскиваемую фигуру
@@ -275,7 +275,7 @@ void GraphicsView::mouseMoveEvent(QMouseEvent* event) {
         return;
     }
     
-    // Изменяем курсор и отслеживаем наведение
+    // изменяем курсор и отслеживаем наведение
     QPointF scenePos = mapToScene(event->pos());
     int shapeId = findShapeAtPosition(scenePos);
     

@@ -179,7 +179,7 @@ void MainWindow::setupConnections() {
                         .arg(shapeId)
                         .arg(qRound(newPos.x()))
                         .arg(qRound(newPos.y())),
-                    200);
+                    3000);
                 m_shapeModel->refresh();
             });
 }

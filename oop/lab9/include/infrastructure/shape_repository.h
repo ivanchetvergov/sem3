@@ -6,7 +6,6 @@
 #include <optional>
 #include <map>
 #include <boost/signals2.hpp>
-#include <QObject>
 
 namespace infrastructure {
 
@@ -16,8 +15,7 @@ namespace infrastructure {
  * Класс ShapeRepository инкапсулирует логику доступа к данным,
  * скрывая детали работы с SQL (QSqlDatabase) от вышестоящих слоев (Presentation).
  */
-class ShapeRepository : public QObject {
-    Q_OBJECT
+class ShapeRepository {
 public:
     explicit ShapeRepository(DatabaseManager& dbManager);
 
@@ -37,11 +35,12 @@ public:
     bool removeAllConnectionsForShape(int shapeId);
     
     //*  --- Signals (Boost.Signals2) ---    
-    // (замена QT сигналов не требует MOC)
+    // (замена QT сигналов не требует MOC) (consumer - gr_view)
+    //* void - ничего не возращает, принимает int
     boost::signals2::signal<void(int)> shapeAdded;
-    boost::signals2::signal<void(int)> shapeUpdated;
     boost::signals2::signal<void(int)> shapeRemoved;
-    boost::signals2::signal<void(int)> connectionsChanged;
+    // boost::signals2::signal<void(int)> shapeUpdated;
+    // boost::signals2::signal<void(int)> connectionsChanged;
 
 private:
     // * Приватные методы
