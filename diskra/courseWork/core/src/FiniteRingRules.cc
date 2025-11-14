@@ -189,15 +189,15 @@ void FiniteRingRules::printRules() const {
     }
     std::cout << std::endl;
 
-    // Дополнительная проверка на правило +1
-    std::cout << "\n--- Проверка Правила '+1' (X + 1) ---" << std::endl;
-    std::cout << "X  | X + 1" << std::endl;
-    std::cout << "---|------" << std::endl;
-    for (int i = 0; i < size_; ++i) {
-        char current_char = getValueChar(i);
-        // Следующий элемент в цикле (использует индексы, как в SmallRingArithmetic)
-        char next_char = getValueChar((i + 1) % size_); 
-        std::cout << current_char << "  | " << next_char << std::endl;
-    }
+    // // Дополнительная проверка на правило +1
+    // std::cout << "\n--- Проверка Правила '+1' (X + 1) ---" << std::endl;
+    // std::cout << "X  | X + 1" << std::endl;
+    // std::cout << "---|------" << std::endl;
+    // for (int i = 0; i < size_; ++i) {
+    //     char current_char = getValueChar(i);
+    //     // Следующий элемент в цикле (использует индексы, как в SmallRingArithmetic)
+    //     char next_char = getValueChar((i + 1) % size_); 
+    //     std::cout << current_char << "  | " << next_char << std::endl;
+    // }
     std::cout << "==========================================" << std::endl;
 }

@@ -8,7 +8,7 @@ char SmallRingArithmetic::plusOne(char c) const {
     // 1. получаем упорядоченный список символов кольца
     const std::vector<char>& values = rules_.getOrderedValues(); 
     
-    // 2. находим позицию текущего символа c (O(N) )
+    // 2. находим позицию текущего символа c (O(N))
     auto it = std::find(values.begin(), values.end(), c);
 
     // проверка на ошибку

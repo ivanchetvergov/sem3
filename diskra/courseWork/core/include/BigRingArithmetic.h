@@ -7,9 +7,9 @@
 class BigRingArithmetic {
 public:
     BigRingArithmetic(const FiniteRingRules& rules, 
-                       const SmallRingArithmetic& small);
+                      const SmallRingArithmetic& small);
     
-    // * орперации: строка × строка → строка
+    // * операции: строка × строка → строка
     RingNumber add(const RingNumber& a, const RingNumber& b) const;
     RingNumber subtract(const RingNumber& a, const RingNumber& b) const;
     RingNumber multiply(const RingNumber& a, const RingNumber& b) const;
@@ -18,13 +18,23 @@ public:
     RingNumber negate(const RingNumber& a) const;
     RingNumber subtractPositional(const RingNumber& a, const RingNumber& b) const;
 
+    // * константа: максимальное количество разрядов
+    static const size_t MAX_DIGITS = 8;
+
 private:
     const FiniteRingRules& rules_;
     const SmallRingArithmetic& small_;
+
+    const char zero_ = rules_.getZeroElement();
+    const char one_ = rules_.getOneElement();
     
     // * вспомогательные методы
     RingNumber multiplyByDigit(const RingNumber& num, char digit) const;
+    char findQuotientDigit(const RingNumber& remainder, const RingNumber& shifted_divisor) const;
+    // * сдвиги
     RingNumber shiftLeft(const RingNumber& num, int positions) const;
+    RingNumber shiftRight(const RingNumber& num, int positions) const;
+    // * сравнение 
     bool isGreaterOrEqual(const RingNumber& a, const RingNumber& b) const;
     bool isLessThan(char a, char b) const;
 };

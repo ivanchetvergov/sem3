@@ -111,15 +111,26 @@ string RingNumber::toString() const {
 // нормализация (удаление ведущих нулей)
 void RingNumber::normalize() {
     const char zero = rules_.getZeroElement();
-
-    // удаляем нули с конца
+    
+    // --- 1. Удаление ведущих нулей ---
     while (digits_.size() > 1 && digits_.back() == zero) {
         digits_.pop_back();
     }
 
-    // гарантируем хотя бы одну цифру
+    // гарантируем хотя бы одну цифру (ноль)
     if (digits_.empty()) {
         digits_.push_back(zero);
+        return; 
+    }
+    
+    // --- 2. Обрезка до MAX_DIGITS ---
+    const size_t PROJECT_MAX_DIGITS = 8; 
+
+    if (digits_.size() > PROJECT_MAX_DIGITS) {
+        digits_.resize(PROJECT_MAX_DIGITS);
+        while (digits_.size() > 1 && digits_.back() == zero) {
+            digits_.pop_back();
+        }
     }
 }
 
