@@ -11,6 +11,7 @@ namespace presentation {
 /*
  * @brief Пользовательское представление для отображения фигур (QGraphicsView).
  *
+ * Теперь использует стандартные QGraphicsItem вместо ручной отрисовки.
  * Отвечает за визуализацию всех объектов-фигур, их связей и обработку
  * пользовательского взаимодействия в графической области. Подписывается
  * на сигналы репозитория для автоматического обновления.
@@ -22,44 +23,44 @@ public:
     explicit GraphicsView(std::shared_ptr<infrastructure::ShapeRepository> repository,
                          QWidget* parent = nullptr);
 
-    void addShape(std::unique_ptr<domain::Shape> shape);
-    void refresh();         // принудительно перезагружает все фигуры из репозитория
-    void clearShapes();     // очищает локальный кэш фигур (m_shapes)
-    void updateShapeVisibility(int shapeId, bool visible); // меняет флаг видимости фигуры
+    void addShape(domain::Shape* shape);        // добавляет фигуру на сцену
+    void refresh();                             // принудительно перезагружает все фигуры
+    void clearShapes();                         // очищает все фигуры со сцены
+    void updateShapeVisibility(int shapeId, bool visible); // меняет видимость фигуры
 
 signals:
     void shapeSelected(int shapeId);                                    // сигнал при выборе фигуры
-    void shapePositionChanged(int shapeId, const QPointF& newPosition); // сигнал при изменении ее позиции
+    void shapePositionChanged(int shapeId, const QPointF& newPosition); // сигнал при изменении позиции
 
 protected:
-    void drawBackground(QPainter* painter, const QRectF& rect) override; // рисует фон
-    void drawForeground(QPainter* painter, const QRectF& rect) override; // рисует поверх всего
-    void mousePressEvent(QMouseEvent* event) override;      // нажатие кнопки мыши 
-    void mouseMoveEvent(QMouseEvent* event) override;       // передвижение мыши
-    void mouseReleaseEvent(QMouseEvent* event) override;    // отпускание кнопки мыши
+    void drawBackground(QPainter* painter, const QRectF& rect) override; // рисует сетку
+    void mousePressEvent(QMouseEvent* event) override;      // обработка кликов
+    void mouseReleaseEvent(QMouseEvent* event) override;    // обработка отпускания мыши
 
 private slots:
-    void onShapeAdded(int id);      // обрабатывает сигнал от репозитория о доб. фигуры
-    void onShapeRemoved(int id);    // сигнал об удалении фигуры
+    void onShapeAdded(int id);          // обрабатывает сигнал о добавлении фигуры
+    void onShapeRemoved(int id);        // обрабатывает сигнал об удалении фигуры
+    void onShapeMoved();                // обрабатывает перемещение фигуры
 
 private:
-    void loadAllShapes();           // загружает все фигуры из репозитория в кэш m_shapes
-    void drawConnections(QPainter* painter); 
-    QPointF getShapeCenter(int shapeId) const;
-    QPointF getEdgePoint(const QRectF& bounds, const QLineF& line, bool isStart) const;
-    int findShapeAtPosition(const QPointF& pos) const;
-
-    // * UI / Core
-    QGraphicsScene* m_scene; // графическая сцена
-    std::shared_ptr<infrastructure::ShapeRepository> m_repository;      // репозиторий для доступа к БД
-    std::unordered_map<int, std::unique_ptr<domain::Shape>> m_shapes;   // кэш всех фигур отс. по ID
+    void loadAllShapes();               // загружает все фигуры из репозитория
+    void updateConnections();           // обновляет все линии связей между фигурами
+    void createConnectionItems();       // создаёт графические элементы для связей
     
-    // * Drag and drop state (Состояние перетаскивания)
-    int m_draggedShapeId{-1};
-    QPointF m_dragStartPos;
-    QPointF m_shapeOriginalPos;
-    bool m_isDragging{false};
-    int m_hoveredShapeId{-1};
+    // * UI / Core
+    QGraphicsScene* m_scene;            // графическая сцена Qt
+    std::shared_ptr<infrastructure::ShapeRepository> m_repository; // репозиторий БД
+    
+    // * Хранилища графических элементов
+    // кэш всех фигур: ID -> указатель на Shape (сцена владеет объектами)
+    std::unordered_map<int, domain::Shape*> m_shapes;
+    
+    // список всех линий связей (сцена владеет объектами)
+    std::vector<domain::ConnectionItem*> m_connections;
+    
+    // * Состояние взаимодействия
+    bool m_isMousePressed{false};       // флаг нажатия мыши
+    QPointF m_lastMousePos;             // последняя позиция мыши
 };
 
 } // namespace presentation

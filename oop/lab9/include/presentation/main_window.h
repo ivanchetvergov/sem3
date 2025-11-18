@@ -84,6 +84,10 @@ private:
     QCheckBox* m_filterRectangleCheck;
     // флажок для скрытия/отображения полигонов
     QCheckBox* m_filterPolygonCheck;
+    // флажок для фильрации ID
+    QCheckBox* m_filterIDActiveCheck; 
+    QSpinBox* m_filterIDSpin;
+
 };
 
 } // namespace presentation

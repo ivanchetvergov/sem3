@@ -1,16 +1,16 @@
 #pragma once
 
 #include <QString>
-#include <QVector>
 #include <QPointF>
 #include <optional>
 #include <vector>
 #include <memory>
 
-namespace domain {  
+namespace domain {
+
 /*
  * @brief Перечисление типов геометрических фигур.
-*/
+ */
 enum class ShapeType {
     Ellipse,
     Rectangle,
@@ -18,12 +18,10 @@ enum class ShapeType {
 };
 
 /*
-* @brief Структура данных, хранящая состояние фигуры.
-*
-* Содержит все параметры, необходимые для создания, хранения и отображения.
-*/
+ * @brief Структура данных, хранящая состояние фигуры.
+ */
 struct ShapeData {
-    int id{-1}; // значение по умолчанию, чтобы избежать UB
+    int id{-1};
     ShapeType type{ShapeType::Rectangle};
     QPointF position{0.0, 0.0};
     double width{100.0};
@@ -32,20 +30,19 @@ struct ShapeData {
     std::vector<int> connectedShapeIds;
     bool isVisible{true};
 
-    // ! Правило пяти (The Rule of Five)
-    // явное объявление =default предотвращает ошибку компилятора/STL,
-    // которая приводила к неверному побитовому перемещению (memcpy)
+    // * --- правило пяти (The Rule of Five) ---
     ShapeData() = default; 
     ShapeData(const ShapeData& other) = default;
     ShapeData& operator=(const ShapeData& other) = default;
-    ShapeData(ShapeData&& other) noexcept;
-    ShapeData& operator=(ShapeData&& other) noexcept;
+    ShapeData(ShapeData&& other) noexcept = default;
+    ShapeData& operator=(ShapeData&& other) noexcept = default;
+    
     ~ShapeData() = default;
 };
 
-// * --- Методы для преобразования фигуры ---
-// inline предотвращает ошибки линковки и ускоряет код
-inline QString shapeTypeToString(ShapeType type) {
+// * --- методы для преобразования фигуры ---
+
+inline QString shapeTypeToString(ShapeType type) noexcept { // Добавлено noexcept
     switch (type) {
         case ShapeType::Ellipse: return "Ellipse";
         case ShapeType::Rectangle: return "Rectangle";
@@ -54,7 +51,7 @@ inline QString shapeTypeToString(ShapeType type) {
     return "Unknown";
 }
 
-inline std::optional<ShapeType> stringToShapeType(const QString& str) {
+inline std::optional<ShapeType> stringToShapeType(const QString& str) noexcept { // Добавлено noexcept
     if (str == "Ellipse") return ShapeType::Ellipse;
     if (str == "Rectangle") return ShapeType::Rectangle;
     if (str == "Polygon") return ShapeType::Polygon;

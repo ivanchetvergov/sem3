@@ -79,17 +79,13 @@ void MainWindow::createToolbar() {
     m_shapeTypeCombo->addItem("Polygon", static_cast<int>(domain::ShapeType::Polygon));
     addLayout->addWidget(m_shapeTypeCombo);
     
-    addLayout->addWidget(new QLabel("X:", this));
     m_xPosSpin = new QSpinBox(this);
-    m_xPosSpin->setRange(-400, 400);
+    m_xPosSpin->setRange(-400, 800);
     m_xPosSpin->setValue(0);
-    addLayout->addWidget(m_xPosSpin);
     
-    addLayout->addWidget(new QLabel("Y:", this));
     m_yPosSpin = new QSpinBox(this);
     m_yPosSpin->setRange(-300, 300);
     m_yPosSpin->setValue(0);
-    addLayout->addWidget(m_yPosSpin);
     
     addLayout->addWidget(new QLabel("W:", this));
     m_widthSpin = new QSpinBox(this);
@@ -146,6 +142,16 @@ void MainWindow::createToolbar() {
     m_filterPolygonCheck = new QCheckBox("Polygons", this);
     m_filterPolygonCheck->setChecked(true);
     filterLayout->addWidget(m_filterPolygonCheck);
+
+    m_filterIDActiveCheck = new QCheckBox("Hide by ID", this);
+    m_filterIDActiveCheck->setChecked(false); 
+    filterLayout->addWidget(m_filterIDActiveCheck);
+
+    m_filterIDSpin = new QSpinBox(this);
+    m_filterIDSpin->setRange(1, 9999);
+    m_filterIDSpin->setValue(1);
+    m_filterIDSpin->setFixedWidth(60);
+    filterLayout->addWidget(m_filterIDSpin);
     
     toolbar->addWidget(filterGroup);
     toolbar->addSeparator();
@@ -154,10 +160,7 @@ void MainWindow::createToolbar() {
     auto* removeBtn = new QPushButton("Remove Selected", this);
     connect(removeBtn, &QPushButton::clicked, this, &MainWindow::onRemoveShapeClicked);
     toolbar->addWidget(removeBtn);
-    
-    auto* refreshBtn = new QPushButton("Refresh", this);
-    connect(refreshBtn, &QPushButton::clicked, this, &MainWindow::onRefreshClicked);
-    toolbar->addWidget(refreshBtn);
+
 }
 
 void MainWindow::setupConnections() {
@@ -167,6 +170,11 @@ void MainWindow::setupConnections() {
     connect(m_filterRectangleCheck, &QCheckBox::checkStateChanged, 
             this, &MainWindow::onFilterChanged);
     connect(m_filterPolygonCheck, &QCheckBox::checkStateChanged, 
+            this, &MainWindow::onFilterChanged);
+    // * ID
+    connect(m_filterIDActiveCheck, &QCheckBox::checkStateChanged, 
+            this, &MainWindow::onFilterChanged);
+    connect(m_filterIDSpin, QOverload<int>::of(&QSpinBox::valueChanged), 
             this, &MainWindow::onFilterChanged);
     
     connect(m_shapeModel, &ShapeModel::shapeVisibilityChanged,
@@ -286,6 +294,9 @@ void MainWindow::onFilterChanged() {
                                 m_filterRectangleCheck->isChecked());
     m_shapeModel->setTypeFilter(domain::ShapeType::Polygon, 
                                 m_filterPolygonCheck->isChecked());
+
+    bool isIdFilterActive = m_filterIDActiveCheck->isChecked();
+    int targetId = m_filterIDSpin->value();
     
     // * обновляем видимость фигур на графическом представлении
     auto allShapes = m_repository->findAll();
@@ -298,6 +309,10 @@ void MainWindow::onFilterChanged() {
         } else if (shapeData.type == domain::ShapeType::Rectangle && !m_filterRectangleCheck->isChecked()) {
             shouldBeVisible = false;
         } else if (shapeData.type == domain::ShapeType::Polygon && !m_filterPolygonCheck->isChecked()) {
+            shouldBeVisible = false;
+        }
+
+        if (isIdFilterActive && shapeData.id == targetId) {
             shouldBeVisible = false;
         }
         

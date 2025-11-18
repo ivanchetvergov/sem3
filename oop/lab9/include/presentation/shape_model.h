@@ -46,7 +46,7 @@ signals:
     void shapeVisibilityChanged();
 
 private slots:
-    void (int id);   // обработка добавления фигуры в репозиторий
+    void onShapeAdded(int id);   // обработка добавления фигуры в репозиторий
     void onShapeRemoved(int id); // обработка удаления фигуры из репозитория
 
 private:
