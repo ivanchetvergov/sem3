@@ -64,8 +64,8 @@ PYBIND11_MODULE(finite_ring_module, m) {
                py::arg("rules"))
           .def(py::init<const FiniteRingRules&, const std::string&>(),
                py::arg("rules"), py::arg("value"))
-          .def(py::init<const FiniteRingRules&, const std::vector<char>&>(),
-               py::arg("rules"), py::arg("value"))
+          .def(py::init<const FiniteRingRules&, const std::vector<char>&, bool>(),
+               py::arg("rules"), py::arg("value"), py::arg("is_negative") = false)
           .def("length", &RingNumber::length)
           .def("getDigit", &RingNumber::getDigit,
                py::arg("index"))
@@ -73,6 +73,11 @@ PYBIND11_MODULE(finite_ring_module, m) {
           .def("normalize", &RingNumber::normalize)
           .def("isZero", &RingNumber::isZero)
           .def("isValid", &RingNumber::isValid)
+          .def("isNegative", &RingNumber::isNegative)
+          .def("setNegative", &RingNumber::setNegative,
+               py::arg("value"))
+          .def("flipSign", &RingNumber::flipSign)
+          .def("withoutSign", &RingNumber::withoutSign)
           .def("__eq__", &RingNumber::operator==)
           .def("__ne__", &RingNumber::operator!=)
           .def("__str__", &RingNumber::toString)
