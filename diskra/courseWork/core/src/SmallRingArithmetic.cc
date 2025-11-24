@@ -105,21 +105,14 @@ char SmallRingArithmetic::findAdditiveInverse(char element) const {
         return zero;
     }
     
-    // * current_y — это наш кандидат на инверс
-    char current_y = zero; 
-
-    // проверяем все N элементов кольца (от 0 до N-1). 
-    for (int i = 0; i < rules_.getSize(); ++i) {
-
-        char sum = add(element, current_y);
-        
+    char candidate = zero;
+    do {
+        char sum = add(element, candidate);
         if (sum == zero) {
-            return current_y; // возвращаем y.
+            return candidate;
         }
-        
-        // инкрементируем кандидата на следующий элемент: y = y + 1
-        current_y = plusOne(current_y); 
-    }
+        candidate = plusOne(candidate);
+    } while (candidate != zero);
     
     throw std::runtime_error("Additive inverse logic error: Full circle without result."); 
 }
@@ -128,24 +121,19 @@ char SmallRingArithmetic::findMultiplicativeInverse(char element) const {
     const char zero = rules_.getZeroElement();
     const char one = rules_.getOneElement();
     
-    // У нуля нет обратного
     if (element == zero) {
         throw std::runtime_error("Zero has no multiplicative inverse");
     }
-    
-    const int size = rules_.getSize();
-    
-    // Ищем x такой, что element * x = 1
-    for (int i = 0; i < size; ++i) {
-        char candidate = rules_.getValueChar(i);
+
+    char candidate = one;
+    do {
         char product = multiply(element, candidate);
-        
         if (product == one) {
             return candidate;
         }
-    }
+        candidate = plusOne(candidate);
+    } while (candidate != one);
     
-    // Не нашли обратный
     throw std::runtime_error("No multiplicative inverse for element: " + 
                            std::string(1, element));
 }

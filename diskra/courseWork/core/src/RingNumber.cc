@@ -10,13 +10,13 @@ using std::runtime_error;
 
 // создает ноль
 RingNumber::RingNumber(const FiniteRingRules& rules)
-    : rules_(rules) {
+    : rules_(rules), is_negative_(false) {
         digits_.push_back(rules_.getZeroElement());
 }
 
 // из строки "abc" -> ['c', 'b', 'a']   
 RingNumber::RingNumber(const FiniteRingRules& rules, const string& value)
-    : rules_(rules) {
+    : rules_(rules), is_negative_(false) {
         
     if (value.empty()) {
         throw runtime_error("Cannot create RingNumber from empty string");
@@ -26,6 +26,10 @@ RingNumber::RingNumber(const FiniteRingRules& rules, const string& value)
     string new_value = value;
     if (value.length() > 0 && value[0] == '-') {
         new_value = value.substr(1);
+        if (new_value.empty()) {
+            throw runtime_error("Invalid negative literal");
+        }
+        is_negative_ = true;
     }
 
     // копируем в обратном порядке
@@ -41,8 +45,8 @@ RingNumber::RingNumber(const FiniteRingRules& rules, const string& value)
 }   
 
 // ! числа которые приходят в этот конструктор уже в нужном порядке
-RingNumber::RingNumber(const FiniteRingRules& rules, const vector<char>& value)
-    : rules_(rules) {
+RingNumber::RingNumber(const FiniteRingRules& rules, const vector<char>& value, bool is_negative)
+    : rules_(rules), is_negative_(is_negative) {
     if (value.empty()) {
         throw runtime_error("Cannot create RingNumber from empty vector");
     }
@@ -55,7 +59,7 @@ RingNumber::RingNumber(const FiniteRingRules& rules, const vector<char>& value)
 
 // копирования
 RingNumber::RingNumber(const RingNumber& other)
-    :rules_(other.rules_), digits_(other.digits_) {}
+    :rules_(other.rules_), digits_(other.digits_), is_negative_(other.is_negative_) {}
 
 // оператор присваивания
 RingNumber& RingNumber::operator=(const RingNumber& other) {
@@ -64,6 +68,7 @@ RingNumber& RingNumber::operator=(const RingNumber& other) {
             throw runtime_error("Cannot assign RingNumbers with different rules");
         }
         digits_ = other.digits_;
+        is_negative_ = other.is_negative_;
     }
     return *this;
 }
@@ -98,7 +103,11 @@ string RingNumber::toString() const {
     }
 
     string result;
-    result.reserve(digits_.size());
+    result.reserve(digits_.size() + 1);
+
+    if (is_negative_) {
+        result.push_back('-');
+    }
 
     // записываем в обратном порядке
     for (auto it = digits_.rbegin(); it != digits_.rend(); ++it){
@@ -132,6 +141,10 @@ void RingNumber::normalize() {
             digits_.pop_back();
         }
     }
+
+    if (isZero()) {
+        is_negative_ = false;
+    }
 }
 
 // разворот числа
@@ -141,7 +154,7 @@ void RingNumber::reverse() {
 
 // проверка на ноль
 bool RingNumber::isZero() const {
-    return digits_.size() == 1 & digits_[0] == rules_.getZeroElement();
+    return digits_.size() == 1 && digits_[0] == rules_.getZeroElement();
 }
 
 // проверка валидности
@@ -182,6 +195,9 @@ bool RingNumber::operator==(const RingNumber& other) const {
     a.normalize();
     b.normalize();
     
+    if (a.is_negative_ != b.is_negative_) {
+        return false;
+    }
     return a.digits_ == b.digits_;
 }
 
@@ -197,4 +213,22 @@ void RingNumber::validate() {
     } catch (const std::out_of_range& e) {
         throw std::runtime_error("RingNumber is in an invalid state: " + std::string(e.what()));
     }
+}
+
+void RingNumber::setNegative(bool value) {
+    if (isZero()) {
+        is_negative_ = false;
+        return;
+    }
+    is_negative_ = value;
+}
+
+void RingNumber::flipSign() {
+    setNegative(!is_negative_);
+}
+
+RingNumber RingNumber::withoutSign() const {
+    RingNumber copy(*this);
+    copy.is_negative_ = false;
+    return copy;
 }

@@ -6,11 +6,22 @@
 
 // * --- СРАВНЕНИЕ СИМВОЛОВ: a < b? ---
 bool BigRingArithmetic::isLessThan(char a, char b) const {
-    
-    int val_a = rules_.getCharValue(a);
-    int val_b = rules_.getCharValue(b);
-    
-    return val_a < val_b; 
+    if (a == b) {
+        return false;
+    }
+
+    char cursor = zero_;
+    do {
+        if (cursor == a) {
+            return true;
+        }
+        if (cursor == b) {
+            return false;
+        }
+        cursor = small_.plusOne(cursor);
+    } while (cursor != zero_);
+
+    throw std::runtime_error("Ring traversal failed while comparing digits");
 }
 
 // * --- СРАВНЕНИЕ ЧИСЕЛ: a >= b? ---
@@ -19,6 +30,8 @@ bool BigRingArithmetic::isGreaterOrEqual(const RingNumber& a, const RingNumber& 
     // нормализуем оба числа
     RingNumber a_norm = a;
     RingNumber b_norm = b;
+    a_norm.setNegative(false);
+    b_norm.setNegative(false);
     a_norm.normalize();
     b_norm.normalize();
     
@@ -31,16 +44,14 @@ bool BigRingArithmetic::isGreaterOrEqual(const RingNumber& a, const RingNumber& 
     }
     
     // 2. сравниваем поразрядно от СТАРШЕГО к младшему
-    for (int i = len_a - 1; i >= 0; --i) {
+    for (int i = static_cast<int>(len_a) - 1; i >= 0; --i) {
         char digit_a = a_norm[i];
         char digit_b = b_norm[i];
-        
-        int val_a = rules_.getCharValue(digit_a);
-        int val_b = rules_.getCharValue(digit_b);
-        
-        if (val_a != val_b) {
-            return val_a > val_b;
+
+        if (digit_a == digit_b) {
+            continue;
         }
+        return !isLessThan(digit_a, digit_b);
     }
     
     return true; // числа равны
