@@ -31,6 +31,7 @@ private:
     // * вспомогательные методы
     RingNumber multiplyByDigit(const RingNumber& num, char digit) const;
     char findQuotientDigit(const RingNumber& remainder, const RingNumber& shifted_divisor) const;
+    RingNumber addUnsigned(const RingNumber& a, const RingNumber& b) const;
     // * сдвиги
     RingNumber shiftLeft(const RingNumber& num, int positions) const;
     RingNumber shiftRight(const RingNumber& num, int positions) const;

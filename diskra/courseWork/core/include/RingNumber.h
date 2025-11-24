@@ -15,7 +15,7 @@ public:
     // * конструкторы
     explicit RingNumber(const FiniteRingRules& rules);
     RingNumber(const FiniteRingRules& rules, const std::string& value);
-    RingNumber(const FiniteRingRules& rules, const std::vector<char>& digits);
+    RingNumber(const FiniteRingRules& rules, const std::vector<char>& digits, bool is_negative = false);
     
     // * копирование и присваивание
     RingNumber(const RingNumber& other);
@@ -38,6 +38,10 @@ public:
     // * проверки
     bool isZero() const;
     bool isValid() const;
+    bool isNegative() const { return is_negative_; }
+    void setNegative(bool value);
+    void flipSign();
+    RingNumber withoutSign() const;
 
     // * свойства многочлена
     size_t degree() const;
@@ -53,6 +57,7 @@ public:
 private:
     const FiniteRingRules& rules_;
     std::vector<char> digits_; 
+    bool is_negative_ = false;
     
     void validate(); 
 };
