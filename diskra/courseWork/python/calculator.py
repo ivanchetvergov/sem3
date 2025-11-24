@@ -23,7 +23,6 @@ class Calculator:
     
     def __init__(self, variant_name: str) -> None:
         self._print_header(variant_name)
-        # ! Хранит последний результат (RingNumber или DivisionResult)
         self.last_result: Any = None 
         
         try:
@@ -58,57 +57,39 @@ class Calculator:
         print(f"# Символы кольца: {self.symbols}")
         print(f"\n{separator}\n")
     
+    def _exceeds_max_digits(self, value: str) -> bool:
+        return len(value.lstrip('-')) > self.MAX_DIGITS
+    
     def _parse_expression(self, expression: str) -> Optional[List[str]]:
-        """
-        Парсит выражение, поддерживая унарный минус: A * -B, -A + B.
-        Возвращает [op1_str, operator, op2_str] или None в случае ошибки.
-        """
-        # регулярное выражение для поиска: [возможно минус][число] [оператор] [возможно минус][число]
-        # используем \s* для обработки пробелов
         pattern = r"^(-?\w+)\s*([+\-*/])\s*(-?\w+)$"
         match = re.match(pattern, expression.strip())
-        
-        if match:
-            # возвращает op1 operator op2
-            return list(match.groups())
-        
-        return None
+        return list(match.groups()) if match else None
 
-    def calculate(self, op1_full: str, operator: str, op2_full: str) -> Any: # ! Изменен тип возвращаемого значения
-        """
-        Обрабатывает унарный минус и выполняет вычисление.
-        Возвращает объект (RingNumber или DivisionResult) или сообщение об ошибке.
-        """
-        
-        # * --- 1 обработка унарного минуса
-        
+    def calculate(self, op1_full: str, operator: str, op2_full: str) -> Any:
         is_neg_1 = op1_full.startswith('-')
         op1_str = op1_full.lstrip('-')
         
         is_neg_2 = op2_full.startswith('-')
         op2_str = op2_full.lstrip('-')
 
-        # * --- 2 конвертируем в RingNumber
+        if self._exceeds_max_digits(op1_str) or self._exceeds_max_digits(op2_str):
+            return f"Ошибка ввода: Допустимо не более {self.MAX_DIGITS} разрядов (без знака)."
+
         try:
             num1 = RingNumber(self.rules, op1_str)
             num2 = RingNumber(self.rules, op2_str)
             
-            # * --- 3 применяем унарный минус через C++ движок
             if is_neg_1:
                 num1 = self.engine.negate(num1)
             if is_neg_2:
                 num2 = self.engine.negate(num2)
 
         except RuntimeError as e:
-            # ! Возвращаем строку ошибки, если ввод невалиден
             return f"Ошибка ввода: {e}"
         except Exception as e:
             return f"Ошибка ввода (Непредвиденная): {e}"
 
-        # * --- 4 выполнение операции
         try:
-            result_obj: Any
-            
             if operator == '+':
                 result_obj = self.engine.add(num1, num2)
             elif operator == '-':
@@ -116,24 +97,19 @@ class Calculator:
             elif operator == '*':
                 result_obj = self.engine.multiply(num1, num2)
             elif operator == '/':
-                # ! Деление: возвращает структуру DivisionResult
                 result_obj = self.engine.divide(num1, num2)
             else:
                 return f"Ошибка: неизвестный оператор '{operator}'."
             
-            # ! Сохраняем полный объект для доступа через точку в интерактивном режиме
             self.last_result = result_obj 
-            
-            return result_obj # ! Возвращаем объект (RingNumber или DivisionResult)
+            return result_obj 
             
         except RuntimeError as e:
-            # ! перехватываем исключения C++ и возвращаем строку ошибки
             return f"Ошибка вычисления (RuntimeError): {e}"
         except Exception as e:
             return f"Ошибка вычисления: {e}"
     
     def _display_help(self):
-        """Выводит справку."""
         print("\n--- СПРАВКА ---")
         print("Формат ввода: <число> <оператор> <число> (Например: cab * -bac)")
         print("Поддерживаемые операторы: +, -, *, /")
@@ -144,7 +120,6 @@ class Calculator:
         print("  exit   - Выход из программы\n")
         
     def run(self):
-        """Запускает интерактивный режим."""
         print("\n==========================================")
         print("Калькулятор запущен!")
         print(f"Кольцо Z{self.size}. Символы: {' '.join(self.symbols)}")
@@ -159,7 +134,6 @@ class Calculator:
                 if not expression:
                     continue
                 
-                # * --- специальные команды ---
                 if expression.lower() in ['exit', 'quit', 'q']:
                     print("\nПрекращение работы программы...\n")
                     break
@@ -172,7 +146,6 @@ class Calculator:
                     self._display_help()
                     continue
 
-                # * --- обработка ввода одного символа (индекса) ---
                 parts = expression.split()
                 if len(parts) == 1 and parts[0] not in ['/rules', '/help']:
                     sym = parts[0]
@@ -183,7 +156,6 @@ class Calculator:
                         print(f"  -> Ошибка: Символ '{sym}' не является элементом кольца.")
                     continue
                 
-                # * --- парсинг и вычисление выражения ---
                 parsed = self._parse_expression(expression)
                 
                 if not parsed:
@@ -191,34 +163,28 @@ class Calculator:
                     continue
                 
                 op1_full, operator, op2_full = parsed
-                
-                # * вычисление (возвращает объект или строку ошибки)
                 result_obj = self.calculate(op1_full, operator, op2_full)
                 
-                # * --- обработка ошибок ---
                 if isinstance(result_obj, str) and result_obj.startswith("Ошибка"):
                     print(f"  -> {result_obj}")
                     continue
                 
-                # * --- вывод результата ---
-                
-                # Если результат - DivisionResult
                 if isinstance(result_obj, DivisionResult):
                     quotient_str = result_obj.quotient.toString()
                     remainder_str = result_obj.remainder.toString()
                     
-                    if len(quotient_str) > self.MAX_DIGITS:
+                    if self._exceeds_max_digits(quotient_str):
                         print(f"  -> StackOverflow! Частное свыше {self.MAX_DIGITS} разрядов.")
+                    if self._exceeds_max_digits(remainder_str):
+                        print(f"  -> StackOverflow! Остаток свыше {self.MAX_DIGITS} разрядов.")
                     
                     print(f"  -> {op1_full} {operator} {op2_full}")
                     print(f"  -> Частное (Q) = {quotient_str}")
                     print(f"  -> Остаток (R) = {remainder_str}")
-                
-                # Если результат - RingNumber (для +, -, *)
                 else: 
                     result_str = result_obj.toString()
 
-                    if len(result_str) > self.MAX_DIGITS:
+                    if self._exceeds_max_digits(result_str):
                         print(f"  -> StackOverflow! Результат свыше {self.MAX_DIGITS} разрядов.")
 
                     print(f"  -> {op1_full} {operator} {op2_full} = {result_str}")
@@ -230,10 +196,6 @@ class Calculator:
                 print(f"  -> Неожиданная ошибка Python: {e}")
                     
 def load_variants() -> List[Dict[str, Any]]:
-    """
-    Загружает список доступных вариантов из config.yaml.
-    Возвращает список словарей с описанием вариантов.
-    """
     try:
         if not os.path.exists("config.yaml"):
              raise FileNotFoundError("Файл 'config.yaml' не найден.")
