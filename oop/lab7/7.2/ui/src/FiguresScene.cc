@@ -58,7 +58,7 @@ void FiguresScene::bringToFront(QGraphicsItem* item) {
         // Устанавливаем новый максимальный Z-Value
         item->setZValue(currentZValue_++);
         
-        // Перемещаем элемент в конец списка (на "верх")
+        // Перемещаем элемент в конец списка 
         figuresOrder_.removeOne(item);
         figuresOrder_.append(item);
     }

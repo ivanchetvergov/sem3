@@ -55,8 +55,26 @@ void RectItem::mousePressEvent(QGraphicsSceneMouseEvent* event) {
 void RectItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     if (isDragging_) {
         QPointF delta = event->scenePos() - lastMousePos_;
-        moveBy(delta.x(), delta.y());
-        lastMousePos_ = event->scenePos();
+
+        // Текущий прямоугольник в координатах сцены
+        QRectF curSceneRect = mapToScene(boundingRect()).boundingRect();
+        QRectF sceneRect = scene() ? scene()->sceneRect() : QRectF();
+
+        // Предлагаемый прямоугольник после перемещения
+        QRectF proposed = curSceneRect.translated(delta);
+
+        // Подкорректируем дельту, чтобы не выйти за пределы сцены
+        qreal dx = delta.x();
+        qreal dy = delta.y();
+        if (!sceneRect.isNull()) {
+            if (proposed.left() < sceneRect.left()) dx += sceneRect.left() - proposed.left();
+            if (proposed.right() > sceneRect.right()) dx -= proposed.right() - sceneRect.right();
+            if (proposed.top() < sceneRect.top()) dy += sceneRect.top() - proposed.top();
+            if (proposed.bottom() > sceneRect.bottom()) dy -= proposed.bottom() - sceneRect.bottom();
+        }
+
+        moveBy(dx, dy);
+        lastMousePos_ = lastMousePos_ + QPointF(dx, dy);
     }
 }
 
