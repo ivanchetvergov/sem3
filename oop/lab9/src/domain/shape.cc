@@ -50,7 +50,6 @@ void Shape::drawSelectionHighlight(QPainter* painter) const {
 }
 
 // *** ДЕЛЕГИРОВАНИЕ ***
-// В базовом классе эти методы просто делегируют вызов, если делегат установлен.
 QRectF Shape::boundingRect() const { 
     if (m_graphicsDelegate) {
         // boundingRect() должен возвращать прямоугольник в локальных координатах
@@ -61,7 +60,6 @@ QRectF Shape::boundingRect() const {
 
 void Shape::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) { 
     if (m_graphicsDelegate) {
-        // Перед отрисовкой делегата устанавливаем для него наше перо и кисть
         // Предполагаем, что делегат — это QAbstractGraphicsShapeItem или его потомок.
         if (auto shapeItem = qgraphicsitem_cast<QAbstractGraphicsShapeItem*>(m_graphicsDelegate)) {
              shapeItem->setPen(shapePen());
@@ -109,8 +107,17 @@ QVariant Shape::itemChange(GraphicsItemChange change, const QVariant& value) {
 }
 
 void Shape::notifyConnectionsOfPositionChange() {
-    // Эта функция остается, чтобы соответствовать старому интерфейсу, 
-    // но ее логику теперь полностью заменяет сигнал positionChanged.
+}
+
+void Shape::applyData(const ShapeData& data) {
+    // Обновляем внутренние данные и базовые свойства
+    QPointF oldPos = pos();
+    m_data = data;
+    const qreal EPS = 0.5; 
+    if (QLineF(oldPos, data.position).length() > EPS) {
+        setPos(data.position);
+    }
+    setVisible(data.isVisible);
 }
 
 
@@ -118,63 +125,112 @@ void Shape::notifyConnectionsOfPositionChange() {
 Ellipse::Ellipse(const ShapeData& data) 
     : Shape(data) {
     
-    // !!! Создаём делегата, передавая 'this' как родителя.
-    // Родитель (Shape) автоматически становится владельцем и управляет памятью.
+    // Создаём делегата без родителя
     m_graphicsDelegate = new QGraphicsEllipseItem(
         -data.width / 2, 
         -data.height / 2, 
         data.width, 
-        data.height, 
-        this // QGraphicsItem* parent
+        data.height
     );
     
-    // Устанавливаем положение делегата в (0,0) относительно родителя (Shape)
+    // Устанавливаем родителя после создания
+    m_graphicsDelegate->setParentItem(this);
     m_graphicsDelegate->setPos(0, 0);
+}
+
+QRectF Ellipse::boundingRect() const {
+    return Shape::boundingRect();
+}
+
+void Ellipse::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
+    Shape::paint(painter, option, widget);
 }
 
 QBrush Ellipse::shapeBrush() const {
     return QBrush(QColor(100, 149, 237, 180));
 }
 
+void Ellipse::applyData(const ShapeData& data) {
+    Shape::applyData(data);
+    // обновляем геометрию делегата
+    if (auto ellipse = qgraphicsitem_cast<QGraphicsEllipseItem*>(m_graphicsDelegate)) {
+        ellipse->setRect(-data.width / 2.0, -data.height / 2.0, data.width, data.height);
+        ellipse->setPen(shapePen());
+        ellipse->setBrush(shapeBrush());
+    }
+}
+
 // * --- Rectangle ---
 Rectangle::Rectangle(const ShapeData& data) 
     : Shape(data) {
     
-    // !!! Создаём делегата
-    m_graphicsDelegate = new QGraphicsRectItem(
-        -data.width / 2, 
-        -data.height / 2, 
-        data.width, 
-        data.height, 
-        this // QGraphicsItem* parent
+    // Создаём делегата без родителя
+    QGraphicsRectItem* rectangleItem = new QGraphicsRectItem(
+        QRectF(-data.width / 2, -data.height / 2, data.width, data.height)
     );
 
+    m_graphicsDelegate = rectangleItem;
+    // Устанавливаем родителя после создания
+    m_graphicsDelegate->setParentItem(this);
     m_graphicsDelegate->setPos(0, 0);
 }
-// Методы paint и boundingRect делегированы в базовом классе Shape
+QRectF Rectangle::boundingRect() const {
+    return Shape::boundingRect();
+}
+
+void Rectangle::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
+    Shape::paint(painter, option, widget);
+}
 
 QBrush Rectangle::shapeBrush() const {
     return QBrush(QColor(144, 238, 144, 180));
 }
 
+void Rectangle::applyData(const ShapeData& data) {
+    Shape::applyData(data);
+    if (auto rect = qgraphicsitem_cast<QGraphicsRectItem*>(m_graphicsDelegate)) {
+        rect->setRect(QRectF(-data.width / 2.0, -data.height / 2.0, data.width, data.height));
+        rect->setPen(shapePen());
+        rect->setBrush(shapeBrush());
+    }
+}
+
 // * --- Polygon --- (Обновлен для использования делегата)
 Polygon::Polygon(const ShapeData& data) : Shape(data) {
     
-    // !!! Создаём делегата
+    // Создаём делегата без родителя
     QGraphicsPolygonItem* polygonItem = new QGraphicsPolygonItem(
-        getPolygon(), 
-        this // QGraphicsItem* parent
+        getPolygon()
     );
     
     m_graphicsDelegate = polygonItem;
+    // Устанавливаем родителя после создания
+    m_graphicsDelegate->setParentItem(this);
     m_graphicsDelegate->setPos(0, 0);
+}
+
+QRectF Polygon::boundingRect() const {
+    return Shape::boundingRect();
+}
+
+void Polygon::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) {
+    Shape::paint(painter, option, widget);
 }
 
 QBrush Polygon::shapeBrush() const {
     return QBrush(QColor(255, 182, 193, 180));
 }
 
-// Методы Polygon::boundingRect/paint делегированы в Shape::boundingRect/paint
+void Polygon::applyData(const ShapeData& data) {
+    Shape::applyData(data);
+    if (auto poly = qgraphicsitem_cast<QGraphicsPolygonItem*>(m_graphicsDelegate)) {
+        QPolygonF newPoly;
+        for (const auto &pt : data.polygonPoints) newPoly << pt;
+        poly->setPolygon(newPoly);
+        poly->setPen(shapePen());
+        poly->setBrush(shapeBrush());
+    }
+}
 
 QPolygonF Polygon::getPolygon() const {
     if (m_data.polygonPoints.empty()) {

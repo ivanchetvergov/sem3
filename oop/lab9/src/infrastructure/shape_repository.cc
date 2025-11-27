@@ -6,22 +6,24 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QDebug>
 
 namespace infrastructure {
 
 ShapeRepository::ShapeRepository(DatabaseManager& dbManager) 
     : m_dbManager(dbManager) {}
 
-// * CREATE метод
+// * CREATE - создание новой фигуры в БД
 std::optional<int> ShapeRepository::save(const domain::ShapeData& data) {
     QSqlQuery query(m_dbManager.database());
     
-    // создаем шаблон запроса (приготавливаем его к данным)
+    // * Создаём подготовленный SQL-запрос 
     query.prepare(R"(
         INSERT INTO shapes (type, position_x, position_y, width, height, polygon_points, is_visible)
         VALUES (:type, :pos_x, :pos_y, :width, :height, :polygon_points, :visible)
     )");
-    // устанавливаем данные в поля (биндим)
+    
+    // * Биндим значения к плейсхолдерам
     query.bindValue(":type", domain::shapeTypeToString(data.type));
     query.bindValue(":pos_x", data.position.x());
     query.bindValue(":pos_y", data.position.y());
@@ -35,26 +37,31 @@ std::optional<int> ShapeRepository::save(const domain::ShapeData& data) {
         return std::nullopt;
     }
     
+    // получаем ID только что созданной записи
     int newId = query.lastInsertId().toInt();
     
-    // сохраняем связи
+    // * Сохраняем связи с другими фигурами (если есть)
     if (!data.connectedShapeIds.empty()) {
         saveConnections(newId, data.connectedShapeIds);
     }
-    // * отправляем сигнал
+    
+    // * Эмитим сигнал о добавлении фигуры (Boost.Signals2)
+    qDebug() << "ShapeRepository::save - newId" << newId;
     shapeAdded(newId);
 
-    return newId; // возвращаем новый Id
+    return newId; // возвращаем новый ID
 }
 
-// * UPDATE метод
+// * UPDATE - обновление всех полей фигуры в БД
 bool ShapeRepository::update(const domain::ShapeData& data) {
+    qDebug() << "ShapeRepository::update - executing update for id" << data.id << "pos" << data.position;
     if (data.id < 0) {
         return false;
     }
     
     QSqlQuery query(m_dbManager.database());
     
+    // * Подготовленный запрос для обновления ВСЕХ полей фигуры
     query.prepare(R"(
         UPDATE shapes 
         SET type = :type, position_x = :pos_x, position_y = :pos_y,
@@ -63,6 +70,7 @@ bool ShapeRepository::update(const domain::ShapeData& data) {
         WHERE id = :id
     )");
     
+    // биндим все поля
     query.bindValue(":id", data.id);
     query.bindValue(":type", domain::shapeTypeToString(data.type));
     query.bindValue(":pos_x", data.position.x());
@@ -77,27 +85,33 @@ bool ShapeRepository::update(const domain::ShapeData& data) {
         return false;
     }
 
-    // * отправляем сигнал
-    // shapeUpdated(data.id);
+    // * Эмитим сигнал об обновлении фигуры
+    qDebug() << "ShapeRepository::update - emit shapeUpdated for id" << data.id;
+    shapeUpdated(data.id);
 
     return true;
 }
 
+// * DELETE - удаление фигуры из БД
 bool ShapeRepository::remove(int shapeId) {
     QSqlQuery checkQuery(m_dbManager.database());
-    // собираем пробный запрос
+    
+    // * Сначала проверяем, какие фигуры были связаны с удаляемой
     checkQuery.prepare("SELECT shape_id FROM shape_connections WHERE connected_shape_id = :id");
     checkQuery.bindValue(":id", shapeId);
-    // смотрим какие id были тронуты
+    
+    // собираем ID затронутых фигур
     std::vector<int> affectedIds;
     if (checkQuery.exec()) {
         while (checkQuery.next()) {
             affectedIds.push_back(checkQuery.value(0).toInt());
         }
     }
-    // удаляем все связи (CASCADE должен сработать автоматически)
+    
+    // * Удаляем все связи этой фигуры (CASCADE должен сработать автоматически)
     removeAllConnectionsForShape(shapeId);
     
+    // * Удаляем саму фигуру
     QSqlQuery query(m_dbManager.database());
     query.prepare("DELETE FROM shapes WHERE id = :id");
     query.bindValue(":id", shapeId);
@@ -106,19 +120,22 @@ bool ShapeRepository::remove(int shapeId) {
         qWarning() << "Failed to remove shape:" << query.lastError().text();
         return false;
     }
-    // * отправляем сигнал
+    
+    // * Эмитим сигнал об удалении фигуры
+    qDebug() << "ShapeRepository::remove - removed id" << shapeId;
     shapeRemoved(shapeId);
 
-    // уведомляем фигуры, чьи связи изменились
-    // shapeUpdated
+    // TODO: можно эмитить shapeUpdated для затронутых фигур (affectedIds)
     return true;
 }
 
-// отвечает за передвижение моделей
+// * Обновление ТОЛЬКО позиции фигуры в БД
 bool ShapeRepository::updatePosition(int shapeId, const QPointF& position) {
     if (shapeId < 0) return false;
     
     QSqlQuery query(m_dbManager.database());
+    
+    // * Обновляем только координаты, не трогая остальные поля
     query.prepare(R"(
         UPDATE shapes 
         SET position_x = :pos_x, position_y = :pos_y
@@ -129,13 +146,15 @@ bool ShapeRepository::updatePosition(int shapeId, const QPointF& position) {
     query.bindValue(":pos_x", position.x());
     query.bindValue(":pos_y", position.y());
     
+    qDebug() << "ShapeRepository::updatePosition - updating id" << shapeId << "to" << position;
     if (!query.exec()) {
         qWarning() << "Failed to update shape position:" << query.lastError().text();
         return false;
     }
 
-    // * отправляем сигнал
-    // shapeUpdated(shapeId); 
+    // * Эмитим сигнал об обновлении фигуры
+    qDebug() << "ShapeRepository::updatePosition - emit shapeUpdated for id" << shapeId;
+    shapeUpdated(shapeId);
 
     return true;
 }
@@ -171,42 +190,42 @@ std::optional<domain::ShapeData> ShapeRepository::findById(int id) const {
 
 std::vector<domain::ShapeData> ShapeRepository::findAll() const {
     std::vector<domain::ShapeData> shapes;
-    
+
     QSqlQuery query(m_dbManager.database());
     if (!query.exec("SELECT * FROM shapes")) {
         qWarning() << "Failed to load shapes:" << query.lastError().text();
         return shapes;
     }
-    
+
     while (query.next()) {
         auto shape = findById(query.value("id").toInt());
         if (shape) {
             shapes.push_back(*shape);
         }
     }
-    
+
     return shapes;
 }
 
 std::vector<domain::ShapeData> ShapeRepository::findByType(domain::ShapeType type) const {
     std::vector<domain::ShapeData> shapes;
-    
+
     QSqlQuery query(m_dbManager.database());
     query.prepare("SELECT * FROM shapes WHERE type = :type");
     query.bindValue(":type", domain::shapeTypeToString(type));
-    
+
     if (!query.exec()) {
         qWarning() << "Failed to load shapes by type:" << query.lastError().text();
         return shapes;
     }
-    
+
     while (query.next()) {
         auto shape = findById(query.value("id").toInt());
         if (shape) {
             shapes.push_back(*shape);
         }
     }
-    
+
     return shapes;
 }
 

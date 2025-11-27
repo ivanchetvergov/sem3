@@ -13,7 +13,7 @@ namespace presentation {
  * отвечая за предоставление, форматирование и фильтрацию данных фигур
  * для отображения в таблице.
  */
-class ShapeModel : public QAbstractTableModel {
+class ShapeModel : public   {
     Q_OBJECT
 
 public:
@@ -39,6 +39,7 @@ public:
     void refresh();
     
     void setTypeFilter(domain::ShapeType type, bool visible);
+    void setTypeFilters(bool ellipseVisible, bool rectangleVisible, bool polygonVisible);
     void clearFilters();
     [[nodiscard]] domain::ShapeData getShapeData(int row) const;
 

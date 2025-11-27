@@ -9,6 +9,7 @@
 #include <QStatusBar>
 #include <QHeaderView>
 #include <QRandomGenerator>
+#include <QSignalBlocker>
 
 namespace presentation {
 
@@ -68,7 +69,7 @@ void MainWindow::createToolbar() {
     auto* toolbar = addToolBar("Tools");
     toolbar->setMovable(false);
     
-    // группа добавления фигур
+    // * Группа добавления фигур
     auto* addGroup = new QGroupBox("Add figure", this);
     auto* addLayout = new QHBoxLayout(addGroup);
     
@@ -78,14 +79,6 @@ void MainWindow::createToolbar() {
     m_shapeTypeCombo->addItem("Rect", static_cast<int>(domain::ShapeType::Rectangle));
     m_shapeTypeCombo->addItem("Polygon", static_cast<int>(domain::ShapeType::Polygon));
     addLayout->addWidget(m_shapeTypeCombo);
-    
-    m_xPosSpin = new QSpinBox(this);
-    m_xPosSpin->setRange(-400, 800);
-    m_xPosSpin->setValue(0);
-    
-    m_yPosSpin = new QSpinBox(this);
-    m_yPosSpin->setRange(-300, 300);
-    m_yPosSpin->setValue(0);
     
     addLayout->addWidget(new QLabel("W:", this));
     m_widthSpin = new QSpinBox(this);
@@ -106,7 +99,7 @@ void MainWindow::createToolbar() {
     toolbar->addWidget(addGroup);
     toolbar->addSeparator();
     
-    // группа связей
+    // * Группа связей между фигурами
     auto* connectionGroup = new QGroupBox("Links", this);
     auto* connLayout = new QHBoxLayout(connectionGroup);
     
@@ -127,10 +120,11 @@ void MainWindow::createToolbar() {
     toolbar->addWidget(connectionGroup);
     toolbar->addSeparator();
     
-    // группа фильтров
+    // * Группа фильтров (по типу и по ID)
     auto* filterGroup = new QGroupBox("Filters", this);
     auto* filterLayout = new QHBoxLayout(filterGroup);
     
+    // чекбоксы для фильтрации по типу фигур
     m_filterEllipseCheck = new QCheckBox("Ellipses", this);
     m_filterEllipseCheck->setChecked(true);
     filterLayout->addWidget(m_filterEllipseCheck);
@@ -143,10 +137,12 @@ void MainWindow::createToolbar() {
     m_filterPolygonCheck->setChecked(true);
     filterLayout->addWidget(m_filterPolygonCheck);
 
+    // чекбокс для включения фильтрации по ID
     m_filterIDActiveCheck = new QCheckBox("Hide by ID", this);
     m_filterIDActiveCheck->setChecked(false); 
     filterLayout->addWidget(m_filterIDActiveCheck);
 
+    // спинбокс для выбора ID фигуры, которую нужно скрыть
     m_filterIDSpin = new QSpinBox(this);
     m_filterIDSpin->setRange(1, 9999);
     m_filterIDSpin->setValue(1);
@@ -156,7 +152,7 @@ void MainWindow::createToolbar() {
     toolbar->addWidget(filterGroup);
     toolbar->addSeparator();
     
-    // кнопки управления
+    // * Кнопка удаления выбранной фигуры
     auto* removeBtn = new QPushButton("Remove Selected", this);
     connect(removeBtn, &QPushButton::clicked, this, &MainWindow::onRemoveShapeClicked);
     toolbar->addWidget(removeBtn);
@@ -164,22 +160,25 @@ void MainWindow::createToolbar() {
 }
 
 void MainWindow::setupConnections() {
-    // * QCheckBox
+    // * Подключаем чекбоксы фильтров по типу фигур
     connect(m_filterEllipseCheck, &QCheckBox::checkStateChanged, 
             this, &MainWindow::onFilterChanged);
     connect(m_filterRectangleCheck, &QCheckBox::checkStateChanged, 
             this, &MainWindow::onFilterChanged);
     connect(m_filterPolygonCheck, &QCheckBox::checkStateChanged, 
             this, &MainWindow::onFilterChanged);
-    // * ID
+    
+    // * Подключаем фильтр по ID
     connect(m_filterIDActiveCheck, &QCheckBox::checkStateChanged, 
             this, &MainWindow::onFilterChanged);
     connect(m_filterIDSpin, QOverload<int>::of(&QSpinBox::valueChanged), 
             this, &MainWindow::onFilterChanged);
     
+    // * Когда модель меняет видимость фигур (через фильтры), обновляем графическое представление
     connect(m_shapeModel, &ShapeModel::shapeVisibilityChanged,
             this, &MainWindow::updateGraphicsView);
     
+    // * Когда фигура перемещается, показываем сообщение в статус-баре
     connect(m_graphicsView, &GraphicsView::shapePositionChanged,
             [this](int shapeId, const QPointF& newPos) {
                 statusBar()->showMessage(
@@ -188,40 +187,41 @@ void MainWindow::setupConnections() {
                         .arg(qRound(newPos.x()))
                         .arg(qRound(newPos.y())),
                     3000);
-                m_shapeModel->refresh();
             });
 }
 
 void MainWindow::onAddShapeClicked() {
+    // получаем выбранный тип фигуры из комбобокса
     auto type = static_cast<domain::ShapeType>(m_shapeTypeCombo->currentData().toInt());
     
+    // генерируем случайные координаты для новой фигуры
     auto* generator = QRandomGenerator::global();
     qreal randX = generator->bounded(-450, 551);
     qreal randY = generator->bounded(-250, 151);
-        
-    // обновляем спин-боксы новым значением
-    m_xPosSpin->setValue(qRound(randX));
-    m_yPosSpin->setValue(qRound(randY));
 
+    // создаём данные фигуры с дефолтными параметрами и случайной позицией
     auto shapeData = domain::ShapeFactory::createDefaultShapeData(
         type, 
-        QPointF(m_xPosSpin->value(), m_yPosSpin->value())
+        QPointF(randX, randY)
     );
     
+    // устанавливаем размеры из UI
     shapeData.width = m_widthSpin->value();
     shapeData.height = m_heightSpin->value();
     
+    // сохраняем в БД
     auto id = m_repository->save(shapeData);
     if (id) {
         statusBar()->showMessage(QString("Фигура добавлена с ID: %1").arg(*id), 3000);
-        m_shapeModel->refresh();
-        updateGraphicsView();
+        m_shapeModel->refresh();      // обновляем таблицу
+        updateGraphicsView();         // обновляем сцену (repository уже эмитил shapeAdded, но на всякий случай)
     } else {
         QMessageBox::warning(this, "Ошибка", "Не удалось добавить фигуру");
     }
 }
 
 void MainWindow::onRemoveShapeClicked() {
+    // * Получаем выбранную строку из таблицы
     auto selectedIndexes = m_tableView->selectionModel()->selectedRows();
     if (selectedIndexes.isEmpty()) {
         QMessageBox::information(this, "Информация", "Выберите фигуру для удаления");
@@ -231,21 +231,24 @@ void MainWindow::onRemoveShapeClicked() {
     int row = selectedIndexes.first().row();
     auto shapeData = m_shapeModel->getShapeData(row);
     
+    // * Просим подтверждение удаления
     auto reply = QMessageBox::question(this, "Подтверждение",
         QString("Удалить фигуру с ID %1?").arg(shapeData.id),
         QMessageBox::Yes | QMessageBox::No);
     
     if (reply == QMessageBox::Yes) {
-        m_tableView->selectionModel()->clearSelection(); // cброс выделения
-        m_tableView->setCurrentIndex(QModelIndex());     // cброс текущего индекса
+        // сбрасываем выделение перед удалением
+        m_tableView->selectionModel()->clearSelection();
+        m_tableView->setCurrentIndex(QModelIndex());
 
         if (m_shapeModel->removeRow(row)) {
             statusBar()->showMessage("Фигура удалена", 3000);
-            updateGraphicsView(); 
+            updateGraphicsView();  // обновляем сцену
             m_tableView->selectionModel()->clearSelection();
 
+            // * Автоматически выбираем следующую строку после удаления
             if (m_shapeModel->rowCount() > 0) {
-                // выбираем новую строку на месте удаленной или последнюю
+                // выбираем строку на месте удалённой или последнюю, если удалили последнюю
                 int newRow = std::min(row, m_shapeModel->rowCount() - 1);
                 
                 QModelIndex newIndex = m_shapeModel->index(newRow, 0);
@@ -261,14 +264,17 @@ void MainWindow::onRemoveShapeClicked() {
 }
 
 void MainWindow::onAddConnectionClicked() {
+    // * Получаем ID фигур для создания связи
     int fromId = m_fromShapeIdSpin->value();
     int toId = m_toShapeIdSpin->value();
     
+    // * Проверяем, что пользователь не пытается связать фигуру саму с собой
     if (fromId == toId) {
         QMessageBox::warning(this, "Ошибка", "Нельзя связать фигуру саму с собой");
         return;
     }
     
+    // * Проверяем, что обе фигуры существуют в БД
     auto fromShape = m_repository->findById(fromId);
     auto toShape = m_repository->findById(toId);
     
@@ -277,33 +283,38 @@ void MainWindow::onAddConnectionClicked() {
         return;
     }
     
+    // * Создаём связь в БД
     if (m_repository->addConnection(fromId, toId)) {
         statusBar()->showMessage(
             QString("Связь создана: %1 -> %2").arg(fromId).arg(toId), 3000);
-        m_shapeModel->refresh();
-        updateGraphicsView();
+        m_shapeModel->refresh();   // обновляем таблицу (там отображается количество связей)
+        updateGraphicsView();      // обновляем сцену (чтобы нарисовать линию связи)
     } else {
         QMessageBox::warning(this, "Ошибка", "Не удалось создать связь");
     }
 }
 
 void MainWindow::onFilterChanged() {
-    m_shapeModel->setTypeFilter(domain::ShapeType::Ellipse, 
-                                m_filterEllipseCheck->isChecked());
-    m_shapeModel->setTypeFilter(domain::ShapeType::Rectangle, 
-                                m_filterRectangleCheck->isChecked());
-    m_shapeModel->setTypeFilter(domain::ShapeType::Polygon, 
-                                m_filterPolygonCheck->isChecked());
+    // Атомарно обновляем все три фильтра по типу фигур в модели.
+    // Это предотвращает множественные refresh сцены - вместо этого модель
+    // эмитит один сигнал shapeVisibilityChanged после обновления всех фильтров.
+    m_shapeModel->setTypeFilters(
+        m_filterEllipseCheck->isChecked(),
+        m_filterRectangleCheck->isChecked(),
+        m_filterPolygonCheck->isChecked()
+    );
 
+    // получаем состояние фильтра по ID
     bool isIdFilterActive = m_filterIDActiveCheck->isChecked();
     int targetId = m_filterIDSpin->value();
     
-    // * обновляем видимость фигур на графическом представлении
+    // Обновляем видимость каждой фигуры на основе комбинации всех фильтров.
+    // Это работает с уже загруженными элементами сцены и не пересоздаёт их заново.
     auto allShapes = m_repository->findAll();
     for (const auto& shapeData : allShapes) {
         bool shouldBeVisible = true;
         
-        // * проверяем фильтры
+        // проверяем фильтры по типу
         if (shapeData.type == domain::ShapeType::Ellipse && !m_filterEllipseCheck->isChecked()) {
             shouldBeVisible = false;
         } else if (shapeData.type == domain::ShapeType::Rectangle && !m_filterRectangleCheck->isChecked()) {
@@ -312,21 +323,25 @@ void MainWindow::onFilterChanged() {
             shouldBeVisible = false;
         }
 
+        // проверяем фильтр по ID (если он активен и ID совпадает - скрываем)
         if (isIdFilterActive && shapeData.id == targetId) {
             shouldBeVisible = false;
         }
         
+        // применяем изменение видимости к фигуре на сцене
         m_graphicsView->updateShapeVisibility(shapeData.id, shouldBeVisible);
     }
 }
 
 void MainWindow::onRefreshClicked() {
+    // * Полное обновление всех данных из БД (таблица + сцена)
     m_shapeModel->refresh();
     updateGraphicsView();
     statusBar()->showMessage("Данные обновлены", 2000);
 }
 
 void MainWindow::updateGraphicsView() {
+    // * Обновляем графическое представление (полная перезагрузка сцены из БД)
     m_graphicsView->refresh();
 }
 

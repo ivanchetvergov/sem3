@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsScene>
+#include <QDebug>
 
 namespace presentation {
 
@@ -13,27 +14,29 @@ GraphicsView::GraphicsView(std::shared_ptr<infrastructure::ShapeRepository> repo
     : QGraphicsView(parent)
     , m_repository(repository) {
     
-    // создаём и настраиваем сцену
+    // * Создаём и настраиваем сцену для отрисовки фигур
     m_scene = new QGraphicsScene(this);
-    m_scene->setSceneRect(-500, -300, 1300, 500);
+    m_scene->setSceneRect(-500, -300, 1300, 500); // устанавливаем границы сцены
     setScene(m_scene);
     
-    // настройки рендеринга
-    setRenderHint(QPainter::Antialiasing);
-    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    // * Настройки рендеринга для красивой отрисовки
+    setRenderHint(QPainter::Antialiasing);                     // сглаживание краёв
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);  // полное обновление при изменениях
     setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     
-    // режим взаимодействия
-    setDragMode(QGraphicsView::RubberBandDrag); // резиновое выделение
+    // * Режим взаимодействия с мышью
+    setDragMode(QGraphicsView::RubberBandDrag);                 // резиновое выделение области
     
-    // подключаем сигналы репозитория
+    // * Подключаем сигналы репозитория (Boost.Signals2) для реакции на изменения в БД
     m_repository->shapeAdded.connect([this](int id) { onShapeAdded(id); });
     m_repository->shapeRemoved.connect([this](int id) { onShapeRemoved(id); });
+    m_repository->shapeUpdated.connect([this](int id) { onShapeUpdated(id); });
     
-    // !!! ИСПРАВЛЕНО: QGraphicsScene::changed подключается только ОДИН раз (для оптимизации)
+    // * Подключаем сигнал сцены для обновления позиций линий связей
     connect(m_scene, &QGraphicsScene::changed, this, &GraphicsView::onShapeMoved);
     
+    // загружаем все фигуры из БД при инициализации
     loadAllShapes();
 }
 
@@ -44,43 +47,43 @@ void GraphicsView::addShape(domain::Shape* shape) {
     
     int id = shape->id();
     
-    // добавляем фигуру на сцену (сцена становится владельцем)
+    // * Добавляем фигуру на сцену
     m_scene->addItem(shape);
-    m_shapes[id] = shape;
+    m_shapes[id] = shape;  // сохраняем указатель в кэше для быстрого доступа по ID
     
-    // !!! УДАЛЕНО: Redundant connect, теперь он в конструкторе
-    
-    // обновляем связи после добавления новой фигуры
+    // обновляем линии связей после добавления новой фигуры
     updateConnections();
 }
 
 void GraphicsView::refresh() {
+    // * Полное обновление сцены: удаляем все фигуры и загружаем заново из БД
     clearShapes();
     loadAllShapes();
 }
 
 void GraphicsView::clearShapes() {
-    // удаляем все линии связей
+    // * Удаляем все линии связей со сцены
     for (auto* connection : m_connections) {
         m_scene->removeItem(connection);
         delete connection;
     }
     m_connections.clear();
     
-    // удаляем все фигуры
+    // * Удаляем все фигуры со сцены
     for (auto& [id, shape] : m_shapes) {
         m_scene->removeItem(shape);
-        delete shape;
+        delete shape;  // сцена больше не владеет, поэтому удаляем вручную
     }
     m_shapes.clear();
 }
 
 void GraphicsView::updateShapeVisibility(int shapeId, bool visible) {
+    // * Обновляем видимость конкретной фигуры (для фильтров)
     auto it = m_shapes.find(shapeId);
     if (it != m_shapes.end() && it->second) {
         it->second->setShapeVisible(visible);
         
-        // обновляем связи, т.к. видимость фигуры изменилась
+        // обновляем связи, т.к. видимость фигуры изменилась 
         updateConnections();
     }
 }
@@ -109,6 +112,7 @@ void GraphicsView::drawBackground(QPainter* painter, const QRectF& rect) {
 }
 
 void GraphicsView::onShapeAdded(int id) {
+    // * Обработчик добавления фигуры в БД (вызывается через Boost.Signals2)
     auto shapeData = m_repository->findById(id);
     if (shapeData) {
         // создаём фигуру через фабрику
@@ -120,6 +124,7 @@ void GraphicsView::onShapeAdded(int id) {
 }
 
 void GraphicsView::onShapeRemoved(int id) {
+    // * Обработчик удаления фигуры из БД (вызывается через Boost.Signals2)
     auto it = m_shapes.find(id);
     if (it != m_shapes.end()) {
         domain::Shape* shape = it->second;
@@ -131,13 +136,32 @@ void GraphicsView::onShapeRemoved(int id) {
         // удаляем из кэша
         m_shapes.erase(it);
         
-        // обновляем связи
+        // обновляем связи (удаляем линии, которые вели к этой фигуре)
         updateConnections();
+    }
+
+}
+
+void GraphicsView::onShapeUpdated(int id) {
+    // * Обработчик обновления фигуры в БД (вызывается через Boost.Signals2)
+    auto shapeData = m_repository->findById(id);
+    if (!shapeData) return;
+
+    auto it = m_shapes.find(id);
+    if (it != m_shapes.end() && it->second) {
+        // обновляем существующую фигуру на сцене (применяем новые данные из БД)
+        domain::Shape* shape = it->second;
+        shape->applyData(*shapeData);
+        updateConnections();
+    } else {
+        // если фигуры нет на сцене — создаём заново
+        auto shapePtr = domain::ShapeFactory::create(*shapeData);
+        if (shapePtr) addShape(shapePtr.release());
     }
 }
 
 void GraphicsView::onShapeMoved() {
-    // обновляем позиции всех линий связей при перемещении любой фигуры
+    // * Обработчик изменения сцены - обновляем позиции всех линий связей
     for (auto* connection : m_connections) {
         connection->updatePosition();
     }
@@ -203,20 +227,29 @@ void GraphicsView::mousePressEvent(QMouseEvent* event) {
 
 void GraphicsView::mouseReleaseEvent(QMouseEvent* event) {
     if (m_isMousePressed) {
-        // проверяем, была ли перемещена какая-то фигура
+        // * Проверяем, была ли перемещена какая-то фигура под курсором
         QGraphicsItem* item = itemAt(event->pos());
         
-        if (item && item->type() >= QGraphicsItem::UserType) {
-            // это наша фигура
-            domain::Shape* shape = dynamic_cast<domain::Shape*>(item);
+        if (item) {
+            // itemAt может вернуть дочерний элемент-делегат (эллипс/прямоугольник/полигон)
+            // Идём вверх по цепочке родителей, чтобы найти владельца domain::Shape (верхний уровень)
+            QGraphicsItem* topItem = item;
+            while (topItem && dynamic_cast<domain::Shape*>(topItem) == nullptr) {
+                topItem = topItem->parentItem();
+            }
+
+            domain::Shape* shape = dynamic_cast<domain::Shape*>(topItem);
             if (shape) {
-                // сохраняем новую позицию в БД
+                // * Сохраняем только позицию в БД (не трогаем другие поля)
                 auto shapeOpt = m_repository->findById(shape->id());
                 if (shapeOpt) {
                     auto shapeData = *shapeOpt;
                     shapeData.position = shape->scenePos();
-                    m_repository->update(shapeData);
-                    
+
+                    // сохраняем только позицию (updatePosition)
+                    m_repository->updatePosition(shape->id(), shapeData.position);
+
+                    // эмитим сигнал для обновления статус-бара
                     emit shapePositionChanged(shape->id(), shapeData.position);
                 }
             }

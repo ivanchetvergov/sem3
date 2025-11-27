@@ -29,9 +29,7 @@ public:
     Shape(Shape&&) = delete;
     Shape& operator=(Shape&&) = delete;
 
-    // * контракт интерфейса геттеров:
-    // 1. [[nodiscard]]: обязывает использовать возвращаемое значение.
-    // 2. noexcept: гарантирует, что метод не генерирует исключений
+    // Геттеры
     [[nodiscard]] int id() const noexcept { return m_data.id; }
     [[nodiscard]] ShapeType shapeType() const noexcept { return m_data.type; }    
     [[nodiscard]] QPointF position() const noexcept { return pos(); }
@@ -39,30 +37,29 @@ public:
     [[nodiscard]] const std::vector<int>& connectedShapes() const noexcept { return m_data.connectedShapeIds; }
     [[nodiscard]] const ShapeData& data() const noexcept { return m_data; }
 
-    // * --- сеттеры и управление связями ---
+    // Сеттеры и управление связями
     void setPosition(const QPointF& pos) { setPos(pos); }
     void setShapeVisible(bool visible);
     void addConnection(int shapeId);
     void removeConnection(int shapeId);
 
-    // * --- QGraphicsItem обязательные методы (должны быть реализованы в потомках) ---
-    // !!! Больше не чисто виртуальные, но переопределяются для делегирования
-    QRectF boundingRect() const override;
+    // QGraphicsItem интерфейс - делегируем дочерним классам
+    QRectF boundingRect() const override = 0;
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
-               QWidget* widget = nullptr) override;
+               QWidget* widget = nullptr) override = 0;
 
-    // переопределяем itemChange для обработки изменения позиции
+    // Обработка изменений
     QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
 
-    // * --- Дополнительные методы для взаимодействия ---
     enum { Type = UserType + 1 };
     int type() const override { return Type; }
 
     // виртуальный метод для уведомления об изменении позиции
     virtual void notifyConnectionsOfPositionChange();
+    // Обновить внутреннее состояние фигуры из ShapeData (применяется при внешнем обновлении)
+    virtual void applyData(const ShapeData& data);
 
 signals:
-    // сигнал, который может слушать GraphicsView
     void positionChanged(int shapeId, const QPointF& newPos);
 
 protected:
@@ -73,17 +70,16 @@ protected:
 
     // Виртуальные методы для получения Pen и Brush, чтобы потомки могли их использовать
     virtual QPen shapePen() const { return QPen(Qt::black, 2); }
-    virtual QBrush shapeBrush() const = 0; // Теперь эта логика стала абстрактной!
+    virtual QBrush shapeBrush() const = 0; 
 };
 
 /*
  * @brief Реализация фигуры: Эллипс. Делегирует отрисовку QGraphicsEllipseItem.
  */
-class Ellipse : public Shape, private QGraphicsEllipseItem { // !!! ИЗМЕНЕНО: Приватное наследование !!!
+class Ellipse : public Shape {
 public:
     explicit Ellipse(const ShapeData& data);
     
-    // !!! Методы boundingRect() и paint() наследуются от QGraphicsEllipseItem
     // Мы явно переопределяем их для делегирования
     QRectF boundingRect() const override;
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
@@ -93,16 +89,16 @@ public:
     int type() const override { return Type; }
 protected:
     QBrush shapeBrush() const override;
+    void applyData(const ShapeData& data) override;
 };
 
 /*
  * @brief Реализация фигуры: Прямоугольник. Делегирует отрисовку QGraphicsRectItem.
  */
-class Rectangle : public Shape, private QGraphicsRectItem { // !!! ИЗМЕНЕНО: Приватное наследование !!!
+class Rectangle : public Shape {
 public:
     explicit Rectangle(const ShapeData& data);
     
-    // !!! Методы boundingRect() и paint() наследуются от QGraphicsRectItem
     QRectF boundingRect() const override;
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, 
                QWidget* widget = nullptr) override;
@@ -111,11 +107,11 @@ public:
     int type() const override { return Type; }
 protected:
     QBrush shapeBrush() const override;
+    void applyData(const ShapeData& data) override;
 };
 
 /*
  * @brief Реализация фигуры: Многоугольник. Делегирует отрисовку QGraphicsPolygonItem.
- * Оставим Polygon как есть, но используем делегирование, чтобы не дублировать код.
  */
 class Polygon : public Shape {
 public:
@@ -132,9 +128,12 @@ private:
     QPolygonF getPolygon() const; // вспомогательный метод для получения полигона
 protected:
     QBrush shapeBrush() const override;
+    void applyData(const ShapeData& data) override;
 };
 
-
+/*
+ * @brief Реализация фигуры: Соединение. Делегирует отрисовку QGraphicsPolygonItem.
+ */
 class ConnectionItem : public QGraphicsLineItem {
 public:
     ConnectionItem(int fromId, int toId, Shape* fromShape, Shape* toShape,

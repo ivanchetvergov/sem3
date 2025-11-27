@@ -39,6 +39,7 @@ public:
     //* void - ничего не возращает, принимает int
     boost::signals2::signal<void(int)> shapeAdded;
     boost::signals2::signal<void(int)> shapeRemoved;
+    boost::signals2::signal<void(int)> shapeUpdated;
     // boost::signals2::signal<void(int)> shapeUpdated;
     // boost::signals2::signal<void(int)> connectionsChanged;
 

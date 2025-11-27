@@ -97,52 +97,6 @@ bool ShapeModel::removeRow(int row, const QModelIndex& parent) {
     return success;
 }
 
-/*
-bool ShapeModel::removeRow(int row, const QModelIndex& parent) {
-    if (parent.isValid() || row < 0 || row >= static_cast<int>(m_filteredShapes.size())) {
-        return false;
-    }
-    
-    const int shapeId = m_filteredShapes[row].id;
-
-    // ! блокируем сигналы, чтобы не триггерить onShapeRemoved()
-    // избегаем SIGIT
-    QSignalBlocker blocker(m_repository.get());
-    
-    // 1. Сначала удаляем из БД, чтобы убедиться в успехе
-    bool success = m_repository->remove(shapeId);
-    
-    if (success) {
-        // 2. Уведомляем Qt о начале удаления
-        beginRemoveRows(QModelIndex(), row, row);
-        
-        // 3. Удаляем из структуры, которую использует модель (m_filteredShapes)
-        m_filteredShapes.erase(m_filteredShapes.begin() + row);
-        
-        // 4. Завершаем уведомление
-        endRemoveRows();
-        
-        // 5. Очищаем нефильтрованный кэш (m_shapes), который не используется rowCount()/data()
-        auto it = std::find_if(m_shapes.begin(), m_shapes.end(),
-                               [shapeId](const domain::ShapeData& s) { 
-                                   return s.id == shapeId; 
-                               });
-        if (it != m_shapes.end()) {
-            m_shapes.erase(it);
-        }
-        
-        // 6. Обновляем счетчики
-        m_typeCounts = m_repository->countByType();
-        
-        // 7. Сообщаем о видимости
-        emit shapeVisibilityChanged();
-    }
-    // // вручную отправляем сигнал т.к мы его заблокировали
-    // onShapeRemoved(shapeId);
-
-    return success;
-}
-*/
 
 void ShapeModel::refresh() {
     beginResetModel();
@@ -160,6 +114,23 @@ void ShapeModel::setTypeFilter(domain::ShapeType type, bool visible) {
         m_hiddenTypes.insert(type);
     }
     
+    beginResetModel();
+    updateFilteredShapes();
+    endResetModel();
+    emit shapeVisibilityChanged();
+}
+
+void ShapeModel::setTypeFilters(bool ellipseVisible, bool rectangleVisible, bool polygonVisible) {
+    // Update all three filters in one shot and emit a single visibility change
+    if (ellipseVisible) m_hiddenTypes.remove(domain::ShapeType::Ellipse);
+    else m_hiddenTypes.insert(domain::ShapeType::Ellipse);
+
+    if (rectangleVisible) m_hiddenTypes.remove(domain::ShapeType::Rectangle);
+    else m_hiddenTypes.insert(domain::ShapeType::Rectangle);
+
+    if (polygonVisible) m_hiddenTypes.remove(domain::ShapeType::Polygon);
+    else m_hiddenTypes.insert(domain::ShapeType::Polygon);
+
     beginResetModel();
     updateFilteredShapes();
     endResetModel();

@@ -34,12 +34,13 @@ signals:
 
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect) override; // рисует сетку
-    void mousePressEvent(QMouseEvent* event) override;      // обработка кликов
-    void mouseReleaseEvent(QMouseEvent* event) override;    // обработка отпускания мыши
+    void mousePressEvent(QMouseEvent* event) override;                   // обработка кликов
+    void mouseReleaseEvent(QMouseEvent* event) override;                 // обработка отпускания мыши
 
 private slots:
     void onShapeAdded(int id);          // обрабатывает сигнал о добавлении фигуры
     void onShapeRemoved(int id);        // обрабатывает сигнал об удалении фигуры
+    void onShapeUpdated(int id);        // обрабатывает сигнал об обновлении фигуры
     void onShapeMoved();                // обрабатывает перемещение фигуры
 
 private:

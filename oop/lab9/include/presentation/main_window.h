@@ -66,10 +66,6 @@ private:
     QSpinBox* m_widthSpin;
     // ввод высоты фигуры
     QSpinBox* m_heightSpin;
-    // ввод X-координаты фигуры
-    QSpinBox* m_xPosSpin;
-    // ввод Y-координаты фигуры
-    QSpinBox* m_yPosSpin;
     
     // * Controls (Элементы управления для связей)
     // ID фигуры, от которой идет связь
