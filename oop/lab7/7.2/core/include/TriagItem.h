@@ -24,6 +24,8 @@ protected:
     // Точные границы треугольника
     QPainterPath shape() const override;
 
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+
 private:
     QColor color_;
     bool isDragging_ = false;

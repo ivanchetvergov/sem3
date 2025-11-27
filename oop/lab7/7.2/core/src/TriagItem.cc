@@ -1,6 +1,7 @@
 // TriagItem.cc
 #include "TriagItem.h"
 #include "FiguresScene.h"
+#include <QVariant>
 
 TriagItem::TriagItem(const QColor& color, 
                      const QPointF& p1, 
@@ -85,4 +86,12 @@ void TriagItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
         update();
     }
     QGraphicsPolygonItem::mouseReleaseEvent(event);
+}
+
+QVariant TriagItem::itemChange(GraphicsItemChange change, const QVariant &value) {
+    if (change == QGraphicsItem::ItemSelectedHasChanged) {
+        bool selected = value.toBool();
+        updateAppearance(selected);
+    }
+    return QGraphicsPolygonItem::itemChange(change, value);
 }

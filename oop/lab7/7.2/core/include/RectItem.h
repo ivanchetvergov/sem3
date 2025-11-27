@@ -19,6 +19,8 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+
     // Точные границы для определения попадания курсора
     QPainterPath shape() const override;
 

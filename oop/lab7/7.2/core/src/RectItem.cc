@@ -1,6 +1,7 @@
 // RectItem.cc
 #include "RectItem.h"
 #include "FiguresScene.h"
+#include <QVariant>
 
 RectItem::RectItem(const QPointF& position, 
                    const QColor& color, 
@@ -85,4 +86,12 @@ void RectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
         update();
     }
     QGraphicsRectItem::mouseReleaseEvent(event);
+}
+
+QVariant RectItem::itemChange(GraphicsItemChange change, const QVariant &value) {
+    if (change == QGraphicsItem::ItemSelectedHasChanged) {
+        bool selected = value.toBool();
+        updateAppearance(selected);
+    }
+    return QGraphicsRectItem::itemChange(change, value);
 }

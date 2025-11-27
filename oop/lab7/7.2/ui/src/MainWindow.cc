@@ -25,6 +25,8 @@ void MainWindow::setupUi() {
     graphicsView_->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     graphicsView_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     graphicsView_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    // * разрешаем прямоугольное мультивыделение
+    graphicsView_->setDragMode(QGraphicsView::RubberBandDrag);
 
     // 3 --- создание элементов управления
     figureTypeComboBox_ = new QComboBox(this);
@@ -85,5 +87,6 @@ void MainWindow::on_add_button_clicked() {
 }
 
 void MainWindow::on_remove_button_clicked() {
-    figuresScene_->removeLastFigure();
+    // figuresScene_->removeLastFigure();
+    figuresScene_->removeSelectedFigures();
 }

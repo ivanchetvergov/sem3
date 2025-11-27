@@ -1,6 +1,7 @@
 // EllipseItem.cc
 #include "EllipseItem.h"
 #include "FiguresScene.h"
+#include <QVariant>
 
 EllipseItem::EllipseItem(const QPointF& position, 
                          const QColor& color, 
@@ -82,4 +83,12 @@ void EllipseItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
         update();
     }
     QGraphicsEllipseItem::mouseReleaseEvent(event);
+}
+
+QVariant EllipseItem::itemChange(GraphicsItemChange change, const QVariant &value) {
+    if (change == QGraphicsItem::ItemSelectedHasChanged) {
+        bool selected = value.toBool();
+        updateAppearance(selected);
+    }
+    return QGraphicsEllipseItem::itemChange(change, value);
 }

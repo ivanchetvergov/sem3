@@ -31,6 +31,9 @@ public:
     // Поднять фигуру на передний план
     void bringToFront(QGraphicsItem* item);
     
+    //* удалить все выделенные фигуры
+    void removeSelectedFigures();
+    
     // Получить следующий Z-Value
     qreal getNextZValue() { return currentZValue_++; }
 

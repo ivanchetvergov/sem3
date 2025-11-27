@@ -63,3 +63,18 @@ void FiguresScene::bringToFront(QGraphicsItem* item) {
         figuresOrder_.append(item);
     }
 }
+
+// * removeSelectedFigures
+void FiguresScene::removeSelectedFigures() {
+    QList<QGraphicsItem*> sel = selectedItems();
+    if (sel.isEmpty()) {
+        removeLastFigure();
+        return;
+    }
+
+    for (QGraphicsItem* item : sel) {
+        figuresOrder_.removeOne(item);
+        removeItem(item);
+        delete item;
+    }
+}
