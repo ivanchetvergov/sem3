@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget* parent)
 
 void MainWindow::setupUi() {
     // 1 --- настройка главного окна
-    setWindowTitle("Qt Figures (Graphics View)");
+    setWindowTitle("Qt Figures 7.2");
     setMinimumSize(800, 600);
 
     // 2 --- создание сцены и представления
