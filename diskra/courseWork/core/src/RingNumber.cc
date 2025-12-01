@@ -159,14 +159,12 @@ bool RingNumber::isZero() const {
 
 // проверка валидности
 bool RingNumber::isValid() const {
-    try {
-        for (auto c : digits_) {
-            rules_.getValueChar(c); // бросит исключение если не валидно
+    for (auto c : digits_) {
+        if (!rules_.isValidChar(c)) {
+            return false;
         }
-        return true;
-    } catch (...) {
-        return false;
     }
+    return true;
 }
 
 // возвращает степень многочлена 
@@ -206,12 +204,10 @@ bool RingNumber::operator!=(const RingNumber& other) const {
 }
 
 void RingNumber::validate() {
-    try {
-        for (auto c : digits_) {
-            rules_.getCharValue(c); 
+    for (auto c : digits_) {
+        if (!rules_.isValidChar(c)) {
+            throw std::runtime_error("RingNumber is in an invalid state: invalid character " + std::string(1, c));
         }
-    } catch (const std::out_of_range& e) {
-        throw std::runtime_error("RingNumber is in an invalid state: " + std::string(e.what()));
     }
 }
 

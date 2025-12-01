@@ -16,11 +16,11 @@ variants:
       rule_plus_one: [b, f, g, c, a, h, e, d]
       zero_element: a
       one_element: b
-    # variant_easy:
-    #   size: 8
-    #   rule_plus_one: ['0', '1', '2', '3', '4', '5', '6', '7']
-    #   zero_element: 0
-    #   one_element: 1
+    variant_easy:
+      size: 8
+      rule_plus_one: ['0', '1', '2', '3', '4', '5', '6', '7']
+      zero_element: 0
+      one_element: 1
 
     # X1:
     #   size: 8

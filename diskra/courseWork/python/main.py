@@ -1,5 +1,13 @@
 # main.py
 import sys
+import os
+
+# Отключаем буферизацию stderr для корректного вывода C++ debug-логов
+try:
+    sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
+except:
+    pass  # В некоторых окружениях не поддерживается unbuffered mode
+
 from python.calculator import Calculator, load_variants
 from typing import Dict, Any, List
 

@@ -4,9 +4,6 @@ project(FiniteCalculator VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# set(CMAKE_BUILD_TYPE Debug)
-# add_definitions(-DDEBUG)
-
 include_directories(core/include)
 
 # фикс ворнинга pybind11
