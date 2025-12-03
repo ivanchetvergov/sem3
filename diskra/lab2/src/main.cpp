@@ -7,8 +7,12 @@ int main() {
     auto vars = config::variables();
     auto truth = config::truthVector();
 
-    ZhegalkinPolynomial polynomial(truth);
-    BDDGraph bdd(truth, vars);
+    ZhegalkinPolynomial polynomial(static_cast<int>(vars.size()));
+    polynomial.setVariableNames(vars);
+    polynomial.setTruthTableFromVector(truth);
+    polynomial.buildTriangle();
+
+    BDDGraph bdd(vars, truth);
     ConsoleUi ui(vars, truth, polynomial, bdd);
     ui.run();
 
