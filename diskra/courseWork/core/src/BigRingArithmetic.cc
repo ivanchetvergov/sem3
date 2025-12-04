@@ -5,7 +5,7 @@
 #include <iostream>
 #include <fstream>
 
-#define DEBUG_ARITHMETIC
+// #define DEBUG_ARITHMETIC
 
 #ifdef DEBUG_ARITHMETIC
 #define DEBUG_LOG(msg) std::cout << "[DEBUG] " << msg << std::endl; 
@@ -18,6 +18,7 @@ BigRingArithmetic::BigRingArithmetic(const FiniteRingRules& rules,
     : rules_(rules), small_(small) {}
 
 
+// тупо тут складываем по цифрам без инт короче
 // * --- СЛОЖЕНИЕ ---
 RingNumber BigRingArithmetic::add(const RingNumber& a, const RingNumber& b) const {
     DEBUG_LOG("=== ADD START ===");
@@ -57,6 +58,7 @@ RingNumber BigRingArithmetic::add(const RingNumber& a, const RingNumber& b) cons
 }
 
 RingNumber BigRingArithmetic::addUnsigned(const RingNumber& a, const RingNumber& b) const {
+    // тут чисто модульное сложение по разрядам не переводим в числа
     DEBUG_LOG("  --> addUnsigned: a=" << a.toString() << ", b=" << b.toString());
     size_t max_len = std::max(a.length(), b.length());
     DEBUG_LOG("      max_len=" << max_len);
@@ -74,14 +76,14 @@ RingNumber BigRingArithmetic::addUnsigned(const RingNumber& a, const RingNumber&
         char carry_in = carry_out;
         
         char sum_mid = small_.add(digit_a, digit_b);
-        
+        // проверка на перенос из-за переполнения
         char carry_1 = zero_;
         if (isLessThan(sum_mid, digit_a)) {
             carry_1 = one_;
         }
         
         char sum_final = small_.add(sum_mid, carry_in);
-        
+        // проверка на перенос из-за добавления переноса
         char carry_2 = zero_;
         if (carry_in != zero_ && isLessThan(sum_final, sum_mid)) {
             carry_2 = one_;
@@ -101,6 +103,7 @@ RingNumber BigRingArithmetic::addUnsigned(const RingNumber& a, const RingNumber&
 
 // * --- ВЫЧИТАНИЕ (через аддитивную инверсию) ---
 RingNumber BigRingArithmetic::subtract(const RingNumber& a, const RingNumber& b) const {
+    // вычитаем через прибавление инверсии экономно и без заморочек
     DEBUG_LOG("=== SUBTRACT START ===");
     DEBUG_LOG("  a = " << a.toString() << ", b = " << b.toString());
     RingNumber neg_b = negate(b);
@@ -112,6 +115,7 @@ RingNumber BigRingArithmetic::subtract(const RingNumber& a, const RingNumber& b)
 
 // * --- ПОЗИЦИОННОЕ ВЫЧИТАНИЕ (для деления) ---
 RingNumber BigRingArithmetic::subtractPositional(const RingNumber& a, const RingNumber& b) const {
+    // позиционное вычитание
     DEBUG_LOG("  --> subtractPositional: a=" << a.toString() << ", b=" << b.toString());
     
     size_t max_len = std::max(a.length(), b.length());
@@ -125,18 +129,30 @@ RingNumber BigRingArithmetic::subtractPositional(const RingNumber& a, const Ring
         char digit_a = a.getDigit(i);
         char digit_b = b.getDigit(i);
         DEBUG_LOG("      iter " << i << ": digit_a=" << digit_a << ", digit_b=" << digit_b << ", borrow=" << borrow);
+        // учитываем заём
+        bool borrow_out = false;
 
         if (borrow != zero_) {
+            // нужно занять у следующего разряда
+            bool wrapped = (digit_a == zero_);
             digit_a = small_.subtract(digit_a, one_);
-            DEBUG_LOG("        after borrow: digit_a=" << digit_a);
+            DEBUG_LOG("        after borrow: digit_a=" << digit_a << "; wrapped=" << wrapped);
+            if (wrapped) {
+                // одолжили у следующего разряда, сохраняем этот долг
+                borrow_out = true;
+            }
         }
-
+        // проверка необходимости займа
         bool need_borrow = isLessThan(digit_a, digit_b);
         char diff = small_.subtract(digit_a, digit_b);
         DEBUG_LOG("        diff=" << diff << ", need_borrow=" << need_borrow);
 
+        if (need_borrow) {
+            borrow_out = true;
+        }
+        // сохраняем результат
         result_digits.push_back(diff);
-        borrow = need_borrow ? one_ : zero_;
+        borrow = borrow_out ? one_ : zero_;
     }
 
     if (borrow != zero_) {
@@ -153,13 +169,14 @@ RingNumber BigRingArithmetic::subtractPositional(const RingNumber& a, const Ring
 
 // * --- УМНОЖЕНИЕ ---
 RingNumber BigRingArithmetic::multiply(const RingNumber& a, const RingNumber& b) const {
+    // тут столбик умножения по цифрам без перевода в числа
     RingNumber uns_a = a.withoutSign();
     RingNumber uns_b = b.withoutSign();
     
     if (uns_a.isZero() || uns_b.isZero()) {
         return RingNumber(rules_);
     }
-    
+      
     RingNumber result(rules_);
     
     for (size_t i = 0; i < uns_b.length(); ++i) {
@@ -177,6 +194,7 @@ RingNumber BigRingArithmetic::multiply(const RingNumber& a, const RingNumber& b)
 
 // * --- ДЕЛЕНИЕ С ОСТАТКОМ (Деление Столбиком) ---
 DivisionResult BigRingArithmetic::divide(const RingNumber& a, const RingNumber& b) const {
+    // деление столбиком короче сперва по модулю потом правим знак
     DEBUG_LOG("=== DIVIDE START ===");
     DEBUG_LOG("  a = " << a.toString() << ", b = " << b.toString());
     
@@ -240,11 +258,11 @@ DivisionResult BigRingArithmetic::divide(const RingNumber& a, const RingNumber& 
         DEBUG_LOG("  After correction: q=" << quotient.toString() << ", r=" << remainder.toString());
     }
 
-    // Знак частного: XOR знаков
+    // знак частного: XOR знаков
     bool quotient_negative = (dividend_negative != divisor_negative);
     quotient.setNegative(quotient_negative);
 
-    // Остаток всегда неотрицательный (по ТЗ)
+    // остаток всегда неотрицательный
     remainder.setNegative(false);
 
     remainder.normalize();
@@ -258,6 +276,7 @@ DivisionResult BigRingArithmetic::divide(const RingNumber& a, const RingNumber& 
 
 // * --- АДДИТИВНАЯ ИНВЕРСИЯ (отрицание) ---
 RingNumber BigRingArithmetic::negate(const RingNumber& a) const {
+    // просто меняем знак и нормализуем
     RingNumber result = a;
     result.flipSign();
     result.normalize();
@@ -266,6 +285,7 @@ RingNumber BigRingArithmetic::negate(const RingNumber& a) const {
 
 // * --- ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ---
 RingNumber BigRingArithmetic::multiplyByDigit(const RingNumber& num, char digit) const {
+    // умножаем на одну цифру через последовательное сложение
     DEBUG_LOG("  --> multiplyByDigit: num=" << num.toString() << ", digit=" << digit);
 
     if (digit == zero_ || num.isZero()) {
@@ -306,8 +326,7 @@ RingNumber BigRingArithmetic::shiftLeft(const RingNumber& num, int positions) co
     }
     std::vector<char> result_digits;
     result_digits.reserve(num.length() + positions);
-
-    // добавляем нули в младшие разряды
+    // добавляем нули в младшие разряды тупо сдвиг назад
     for (int i = 0; i < positions; ++i) {
         result_digits.push_back(zero_);
     }

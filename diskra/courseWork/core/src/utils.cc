@@ -4,6 +4,9 @@
 #include <algorithm>
 #include <iostream>
 
+
+
+
 // * --- СРАВНЕНИЕ СИМВОЛОВ: a < b? ---
 bool BigRingArithmetic::isLessThan(char a, char b) const {
     if (a == b) {

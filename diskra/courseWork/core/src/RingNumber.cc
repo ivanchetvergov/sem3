@@ -9,12 +9,13 @@ using std::vector;
 using std::runtime_error;
 
 // создает ноль
+// конструктор ноль просто создает ноль без знака
 RingNumber::RingNumber(const FiniteRingRules& rules)
     : rules_(rules), is_negative_(false) {
         digits_.push_back(rules_.getZeroElement());
 }
 
-// из строки "abc" -> ['c', 'b', 'a']   
+// из строки читаем число слева направо потом переворачиваем короче
 RingNumber::RingNumber(const FiniteRingRules& rules, const string& value)
     : rules_(rules), is_negative_(false) {
         
@@ -22,7 +23,7 @@ RingNumber::RingNumber(const FiniteRingRules& rules, const string& value)
         throw runtime_error("Cannot create RingNumber from empty string");
     }
 
-    // ! обработка унарного минуса
+    // обработка унарного минуса короче без фокусов
     string new_value = value;
     if (value.length() > 0 && value[0] == '-') {
         new_value = value.substr(1);
@@ -32,7 +33,7 @@ RingNumber::RingNumber(const FiniteRingRules& rules, const string& value)
         is_negative_ = true;
     }
 
-    // копируем в обратном порядке
+    // копируем в обратном порядке то есть младшие сначала
     digits_.reserve(value.size());
     for (auto it = new_value.rbegin(); it != new_value.rend(); ++it) {
         char c = *it;
@@ -44,7 +45,7 @@ RingNumber::RingNumber(const FiniteRingRules& rules, const string& value)
     normalize();
 }   
 
-// ! числа которые приходят в этот конструктор уже в нужном порядке
+// этот конструктор принимает вектор уже в формате младшие сначала
 RingNumber::RingNumber(const FiniteRingRules& rules, const vector<char>& value, bool is_negative)
     : rules_(rules), is_negative_(is_negative) {
     if (value.empty()) {
@@ -96,7 +97,7 @@ char RingNumber::getDigit(size_t index) const {
     return digits_[index];
 }
 
-// преобразование в строку 
+// преобразование в строку делаем простую печаль без доп символов
 string RingNumber::toString() const {
     if (digits_.empty()){
         return string(1, rules_.getZeroElement());
@@ -117,7 +118,7 @@ string RingNumber::toString() const {
     return result;
 }
 
-// нормализация (удаление ведущих нулей)
+// нормализация удаляем ведущие нули и обрубаем выше 8 разрядов
 void RingNumber::normalize() {
     const char zero = rules_.getZeroElement();
     
@@ -133,21 +134,21 @@ void RingNumber::normalize() {
     }
     
     // --- 2. Обрезка до MAX_DIGITS ---
-    const size_t PROJECT_MAX_DIGITS = 8; 
+    // const size_t PROJECT_MAX_DIGITS = 8; 
 
-    if (digits_.size() > PROJECT_MAX_DIGITS) {
-        digits_.resize(PROJECT_MAX_DIGITS);
-        while (digits_.size() > 1 && digits_.back() == zero) {
-            digits_.pop_back();
-        }
-    }
+    // if (digits_.size() > PROJECT_MAX_DIGITS) {
+    //     digits_.resize(PROJECT_MAX_DIGITS);
+    //     while (digits_.size() > 1 && digits_.back() == zero) {
+    //         digits_.pop_back();
+    //     }
+    // }
 
     if (isZero()) {
         is_negative_ = false;
     }
 }
 
-// разворот числа
+// разворот массива цифр если нужно
 void RingNumber::reverse() {
     std::reverse(digits_.begin(), digits_.end());
 }
@@ -157,7 +158,7 @@ bool RingNumber::isZero() const {
     return digits_.size() == 1 && digits_[0] == rules_.getZeroElement();
 }
 
-// проверка валидности
+// проверка валидности символов типа все ок или нет
 bool RingNumber::isValid() const {
     for (auto c : digits_) {
         if (!rules_.isValidChar(c)) {

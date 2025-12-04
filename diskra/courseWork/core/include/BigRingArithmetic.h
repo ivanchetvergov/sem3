@@ -9,7 +9,7 @@ public:
     BigRingArithmetic(const FiniteRingRules& rules, 
                       const SmallRingArithmetic& small);
     
-    // * операции: строка × строка → строка
+    // * операции: строка × строка -> строка
     RingNumber add(const RingNumber& a, const RingNumber& b) const;
     RingNumber subtract(const RingNumber& a, const RingNumber& b) const;
     RingNumber multiply(const RingNumber& a, const RingNumber& b) const;
