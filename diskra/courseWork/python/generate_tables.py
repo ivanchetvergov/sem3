@@ -32,56 +32,72 @@ small = SmallRingArithmetic(rules)
 symbols = [rules.getValueChar(i) for i in range(rules.getSize())]
 SIZE = rules.getSize()
 
-# Увеличенная ширина ячейки для идеального зазора (например, 'a  ')
+# Создаем карту соответствия: символ -> индекс (0..N-1)
+symbol_map = {sym: i for i, sym in enumerate(symbols)}
+
+# Увеличенная ширина ячейки для идеального зазора
 CELL_WIDTH = 3
+
+def get_add_carry(a: str, b: str) -> str:
+    """
+    Вычисляет перенос при сложении.
+    Carry = (Index(a) + Index(b)) // Size
+    Возвращает символ кольца, соответствующий этому значению.
+    """
+    val_a = symbol_map[a]
+    val_b = symbol_map[b]
+    carry_idx = (val_a + val_b) // SIZE
+    # В случае сложения перенос обычно 0 или 1, но код универсален
+    return symbols[carry_idx]
+
+def get_mult_carry(a: str, b: str) -> str:
+    """
+    Вычисляет перенос при умножении.
+    Carry = (Index(a) * Index(b)) // Size
+    Возвращает символ кольца, соответствующий этому значению.
+    """
+    val_a = symbol_map[a]
+    val_b = symbol_map[b]
+    carry_idx = (val_a * val_b) // SIZE
+    return symbols[carry_idx]
 
 def print_table(operation_name: str, symbols: List[str], operation_func):
     """Генерирует и выводит таблицу для заданной операции, обеспечивая идеальное выравнивание."""
     
-    # 1. Заголовочная строка с символами
-    
-    # Первая колонка заголовка должна быть пустой и иметь ширину CELL_WIDTH.
+    # 1. Заголовочная строка
     header_start = " " * CELL_WIDTH + "|"
-    
-    # Элементы заголовка, выровненные по CELL_WIDTH.
-    # Обратите внимание: объединяем их БЕЗ ДОПОЛНИТЕЛЬНОГО ПРОБЕЛА.
     header_symbols = "".join([sym.ljust(CELL_WIDTH) for sym in symbols])
     
-    print(f"\n {" " * 8} Таблица {operation_name}:\n")
+    print(f"\n{' ' * 8} Таблица переносов {operation_name}:\n")
     print(f"{header_start} {header_symbols}")
     
     # 2. Разделительная линия
-    # Длина линии данных = CELL_WIDTH * SIZE
     data_line_length = CELL_WIDTH * SIZE
-    
-    separator = "-" * CELL_WIDTH + "+" + "-" * (data_line_length + 1) # +1 для пробела после '|'
+    separator = "-" * CELL_WIDTH + "+" + "-" * (data_line_length + 1)
     print(separator)
 
     # 3. Строки данных
     for a in symbols:
-        # Первая ячейка (заголовок строки)
         row_start = a.ljust(CELL_WIDTH) + "|"
-        
-        # Элементы данных
         data_cells = []
         for b in symbols:
             result = operation_func(a, b)
+            # result[-1] берет последний символ, работает и для char и для string
             result_char = result[-1] 
             data_cells.append(result_char.ljust(CELL_WIDTH))
         
-        # Объединяем элементы данных, как и в заголовке, БЕЗ ДОПОЛНИТЕЛЬНОГО ПРОБЕЛА
         print(f"{row_start} {''.join(data_cells)}")
 
 # --- Вывод ---
 
 print("==========================================")
-print(f"Генерация таблиц для кольца Z{SIZE} (D9)")
+print(f"Генерация таблиц ПЕРЕНОСОВ для кольца Z{SIZE} (D9)")
 print("==========================================")
 
-# Таблица сложения
-print_table("сложения", symbols, small.add)
+# Таблица переносов сложения
+print_table("сложения", symbols, get_add_carry)
 
-# Таблица умножения
-print_table("умножения", symbols, small.multiply)
+# Таблица переносов умножения
+print_table("умножения", symbols, get_mult_carry)
 
 print("\n==========================================")
